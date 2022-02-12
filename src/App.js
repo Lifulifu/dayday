@@ -1,9 +1,10 @@
 import './App.css';
+import MdEditor from './components/MdEditor';
 
 function App() {
   return (
     <>
-      Hello bitch class
+      <MdEditor></MdEditor>
     </>
   );
 }
