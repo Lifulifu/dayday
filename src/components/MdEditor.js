@@ -1,10 +1,10 @@
-import SimpleMDE from "react-simplemde-editor";
-import "easymde/dist/easymde.min.css";
+import React from 'react'
+import Editor from 'rich-markdown-editor';
 
-const MdEditor = () => {
-  return <SimpleMDE>
-    text here...
-  </SimpleMDE>
+export default function MdEditor() {
+  return (
+    <>
+    <Editor/>
+    </>
+  )
 }
-
-export default MdEditor;

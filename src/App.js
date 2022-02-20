@@ -1,10 +1,12 @@
-import './App.css';
-import MdEditor from './components/MdEditor';
+import React from 'react'
+// import MdEditor from './components/MdEditor';
+import SideBar from './components/SideBar';
 
 function App() {
   return (
     <>
-      <MdEditor></MdEditor>
+      <SideBar/>
+      {/* <MdEditor/> */}
     </>
   );
 }
