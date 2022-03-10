@@ -1,30 +1,32 @@
 import React from 'react'
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 import { BsCircle } from 'react-icons/bs';
 
-function SideBarItem(props) {
-  const { icon, text, onClick } = props;
+function SideBarLink(props) {
+  const { icon, text, to, onClick } = props;
   return (
-    <div
+    <Link to={ to }
     className="h-14 flex items-center cursor-pointer hover:bg-gray-300
     transition-all duration-200 ease-in-out" 
     onClick={ onClick }>
       <div className="w-14 flex flex-col items-center shrink-0">{ icon }</div>
       <div className="flex-grow">{ text }</div>
-    </div>
+    </Link>
   )
 }
 
-SideBarItem.propTypes = {
+SideBarLink.propTypes = {
   icon: PropTypes.element,
   text: PropTypes.string,
   onClick: PropTypes.func,
+  to: PropTypes.string,
 }
 
-SideBarItem.defaultProps = {
+SideBarLink.defaultProps = {
   icon: <BsCircle/>,
   text: '',
 }
 
-export default SideBarItem;
+export default SideBarLink;
