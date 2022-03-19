@@ -9,12 +9,14 @@ import SideBar from './components/SideBar';
 function App() {
   return (
     <>
-      <SideBar/>
-      <Routes>
-        <Route exact path="/Write" element={ <Write/> }/>
-        <Route path="/History" element={ <History/> }/>
-        <Route path="/Routine" element={ <Routine/> }/>
-      </Routes>
+      <SideBar />
+      <div className="pl-14">
+        <Routes>
+          <Route exact path="/Write" element={<Write />} />
+          <Route path="/History" element={<History />} />
+          <Route path="/Routine" element={<Routine />} />
+        </Routes>
+      </div>
     </>
   );
 }
