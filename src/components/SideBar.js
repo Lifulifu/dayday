@@ -2,22 +2,60 @@ import React, { useState } from 'react'
 import SideBarItem from './SideBarItem'
 import SideBarLink from './SideBarLink'
 import { BsCalendarCheck } from 'react-icons/bs'
-import { AiOutlineMenu, AiOutlineEdit, AiOutlineHistory } from 'react-icons/ai'
+import {
+  AiOutlineMenu,
+  AiOutlineClose,
+  AiOutlineEdit,
+  AiOutlineHistory,
+  AiOutlineUser,
+  AiOutlineSetting
+} from 'react-icons/ai'
+
+import { signInWithGooglePopup, getUserDocRef } from '../utils/firebase/firebase.utils'
 
 export default function SideBar() {
   const [isExpand, setIsExpand] = useState(false);
 
+  const loginButtonOnclick = async () => {
+    const { user } = await signInWithGooglePopup();
+    const userDocRef = await getUserDocRef(user);
+
+    setIsExpand(false);
+  }
+
   return (
     <>
-      <nav className={`${isExpand ? 'w-48' : 'w-14'}
+      <nav className={`${isExpand ? 'w-72' : 'w-14'}
       fixed top-0 left-0 h-screen z-50
-      flex flex-col overflow-hidden
+      flex flex-col overflow-hidden justify-between
       bg-gray-200 text-gray-800 shadow-md
       transition-all duration-200 ease-in-out` }>
-        <SideBarItem icon={<AiOutlineMenu />} onClick={() => setIsExpand(!isExpand)} />
-        <SideBarLink icon={<AiOutlineEdit />} onClick={() => isExpand && setIsExpand(false)} text="Write" to="/write" />
-        <SideBarLink icon={<AiOutlineHistory />} onClick={() => isExpand && setIsExpand(false)} text="History" to="/history" />
-        <SideBarLink icon={<BsCalendarCheck />} onClick={() => isExpand && setIsExpand(false)} text="Routine" to="/routine" />
+
+        <div className='flex flex-col overflow-hidden'>
+          <SideBarItem icon={
+            isExpand ? <AiOutlineClose /> : <AiOutlineMenu />}
+            onClick={() => setIsExpand(!isExpand)} />
+
+          <SideBarLink icon={<AiOutlineEdit />}
+            onClick={() => setIsExpand(false)} text="Write" to="/write" />
+
+          <SideBarLink icon={<AiOutlineHistory />}
+            onClick={() => setIsExpand(false)} text="History" to="/history" />
+
+          <SideBarLink icon={<BsCalendarCheck />}
+            onClick={() => setIsExpand(false)} text="Routine" to="/routine" />
+        </div>
+
+        <div className='flex flex-col overflow-hidden'>
+          <SideBarItem icon={<AiOutlineUser />}
+            onClick={loginButtonOnclick} text="Login" to="/login" />
+
+          <SideBarItem icon={<AiOutlineSetting />}
+            onClick={() => setIsExpand(false)} text="Setting" to="/login" />
+
+          <div className="h-4"></div>
+        </div>
+
       </nav>
 
       <div className={`${isExpand ? 'opacity-30' : 'hidden opacity-0'}
