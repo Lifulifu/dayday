@@ -11,17 +11,9 @@ import {
   AiOutlineSetting
 } from 'react-icons/ai'
 
-import { signInWithGooglePopup, getUserDocRef } from '../utils/firebase/firebase.utils'
 
 export default function SideBar() {
   const [isExpand, setIsExpand] = useState(false);
-
-  const loginButtonOnclick = async () => {
-    const { user } = await signInWithGooglePopup();
-    const userDocRef = await getUserDocRef(user);
-
-    setIsExpand(false);
-  }
 
   return (
     <>
@@ -47,11 +39,11 @@ export default function SideBar() {
         </div>
 
         <div className='flex flex-col overflow-hidden'>
-          <SideBarItem icon={<AiOutlineUser />}
-            onClick={loginButtonOnclick} text="Login" to="/login" />
+          <SideBarLink icon={<AiOutlineUser />}
+            onClick={() => setIsExpand(false)} text="Login" to="/profile" />
 
           <SideBarItem icon={<AiOutlineSetting />}
-            onClick={() => setIsExpand(false)} text="Setting" to="/login" />
+            onClick={() => setIsExpand(false)} text="Setting" />
 
           <div className="h-4"></div>
         </div>

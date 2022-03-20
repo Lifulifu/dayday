@@ -13,7 +13,7 @@ export default function Write() {
 
   return (
     <div className="pt-8 bg-gray-100">
-      <MdEditor title={'## ' + getDateStr(new Date(), '-')} />
+      <MdEditor title={'# ' + getDateStr(new Date(), '-')} />
     </div>
   )
 }

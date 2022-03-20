@@ -1,12 +1,11 @@
-import React from 'react';
+import { React } from 'react';
 import { Route, Routes } from 'react-router-dom';
 
+import SideBar from './components/SideBar';
 import History from './routes/History';
 import Write from './routes/Write';
 import Routine from './routes/Routine';
-import Login from './routes/Login';
-
-import SideBar from './components/SideBar';
+import Profile from './routes/Profile';
 
 function App() {
   return (
@@ -17,7 +16,7 @@ function App() {
           <Route exact path="/write" element={<Write />} />
           <Route path="/history" element={<History />} />
           <Route path="/routine" element={<Routine />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
     </div>

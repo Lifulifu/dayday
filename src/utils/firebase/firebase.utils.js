@@ -3,7 +3,9 @@ import {
   getAuth,
   // signInWithRedirect,
   signInWithPopup,
-  GoogleAuthProvider
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
 } from 'firebase/auth'
 import {
   getFirestore,
@@ -23,7 +25,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore();  // singleton
 
-// get user auth
 const provider = new GoogleAuthProvider();
 
 provider.setCustomParameters({
@@ -31,10 +32,8 @@ provider.setCustomParameters({
 });
 
 export const auth = getAuth();  // singleton
-export const signInWithGooglePopup = () => signInWithPopup(auth, provider);
+export const logInWithGooglePopup = () => signInWithPopup(auth, provider);
 
-
-// set / get user from firestore
 const createUserDoc = async (userAuth, userDocRef) => {
   const { displayName, email } = userAuth;
   const createdAt = new Date();
@@ -54,10 +53,14 @@ export const getUserDocRef = async (userAuth) => {
   const userDocRef = doc(db, 'users', userAuth.uid);
   const userDocSnap = await getDoc(userDocRef);
 
+  // Add to db if user not found
   if (!userDocSnap.exists()) {
     console.log(`user ${userAuth.uid} does not exist, creating doc.`)
     createUserDoc(userAuth, userDocRef);
   }
-
   return userDocRef;
 }
+
+export const logOut = async () => await signOut(auth);
+
+export const authStateChangeListener = (callback) => onAuthStateChanged(auth, callback);
