@@ -6,19 +6,21 @@ export const UserContext = createContext({
   setCurrUser: () => null
 });
 
+
 export const UserProvider = ({ children }) => {
   const [currUser, setCurrUser] = useState(null);
   const [userDocRef, setUserDocRef] = useState(null);
-  const value = { currUser, setCurrUser, userDocRef };
+  const value = { currUser, userDocRef };
+  const setCurrUserAndUserDocRef = async (user) => {
+    setCurrUser(user);
+    setUserDocRef(await getUserDocRef(user));
+  }
 
   // update the currUser whenever auth changes
   useEffect(() => {
     const unsubscribe = authStateChangeListener((user) => {
       console.log('auth state changed.', user);
-      setCurrUser(user);
-      if (user) {
-        setUserDocRef(getUserDocRef(user));
-      }
+      setCurrUserAndUserDocRef(user);
     });
     return unsubscribe;
   }, [])

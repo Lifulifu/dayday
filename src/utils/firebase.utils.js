@@ -56,7 +56,7 @@ export const getUserDocRef = async (userAuth) => {
   // Add to db if user not found
   if (!userDocSnap.exists()) {
     console.log(`user ${userAuth.uid} does not exist, creating doc.`)
-    createUserDoc(userAuth, userDocRef);
+    await createUserDoc(userAuth, userDocRef);
   }
   return userDocRef;
 }
