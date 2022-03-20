@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import { auth, authStateChangeListener, getUserDocRef } from "../utils/firebase/firebase.utils";
+import { authStateChangeListener, getUserDocRef } from "../utils/firebase.utils";
 
 export const UserContext = createContext({
   currUser: null,
@@ -8,7 +8,8 @@ export const UserContext = createContext({
 
 export const UserProvider = ({ children }) => {
   const [currUser, setCurrUser] = useState(null);
-  const value = { currUser, setCurrUser };
+  const [userDocRef, setUserDocRef] = useState(null);
+  const value = { currUser, setCurrUser, userDocRef };
 
   // update the currUser whenever auth changes
   useEffect(() => {
@@ -16,7 +17,7 @@ export const UserProvider = ({ children }) => {
       console.log('auth state changed.', user);
       setCurrUser(user);
       if (user) {
-        getUserDocRef(user);
+        setUserDocRef(getUserDocRef(user));
       }
     });
     return unsubscribe;

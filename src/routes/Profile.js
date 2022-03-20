@@ -1,5 +1,5 @@
 import { React, useContext } from 'react'
-import { logInWithGooglePopup, getUserDocRef, logOut } from '../utils/firebase/firebase.utils'
+import { logInWithGooglePopup, getUserDocRef, logOut } from '../utils/firebase.utils'
 
 import SquareButton from '../components/SquareButton'
 import { UserContext } from '../contexts/user.context'
