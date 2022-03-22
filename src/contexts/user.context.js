@@ -8,15 +8,18 @@ export const UserContext = createContext({
 
 
 export const UserProvider = ({ children }) => {
-  const [currUser, setCurrUser] = useState(null);
-  const [userDocRef, setUserDocRef] = useState(null);
-  const value = { currUser, userDocRef };
+  // userData = {
+  //   user       // firebase auth obj
+  //   userDocRef // docRef from firestore user collection
+  // }
+  const [userData, setUserData] = useState(null);
+
   const setCurrUserAndUserDocRef = async (user) => {
-    setCurrUser(user);
-    setUserDocRef(await getUserDocRef(user));
+    const userDocRef = await getUserDocRef(user);
+    setUserData({ user, userDocRef });
   }
 
-  // update the currUser whenever auth changes
+  // update the userData whenever auth changes
   useEffect(() => {
     const unsubscribe = authStateChangeListener((user) => {
       console.log('auth state changed.', user);
@@ -24,6 +27,8 @@ export const UserProvider = ({ children }) => {
     });
     return unsubscribe;
   }, [])
+
+  const value = { userData };
 
   return (
     <UserContext.Provider value={value}>

@@ -3,28 +3,41 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { getUserDocRef } from './firebase.utils';
 
 export class DiaryManager {
-  constructor(userDocRef) {
+
+  setUser(userDocRef) {
     this.userDocRef = userDocRef;
   }
 
-  setCurrDate(dateStr) {
-    this.diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);
-  }
-
-  async getDiary() {
-    const diarySnap = await getDoc(this.diaryDocRef);
+  async getDiary(dateStr) {
+    const diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);
+    const diarySnap = await getDoc(diaryDocRef);
     if (diarySnap.exists)
       return diarySnap.data();
-    else
-      return null;
+    return null;
   }
 
-  async saveDiary(data) {
+  async saveDiary(dateStr, content) {
+    const diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);
+    const diarySnap = await getDoc(diaryDocRef);
     try {
-      await setDoc(this.diaryDocRef, data);
+      if (diarySnap.exists()) {
+        const { createdAt } = diarySnap.data();
+        await setDoc(diaryDocRef, {
+          lastModified: new Date(),
+          createdAt,
+          content
+        });
+      }
+      else {
+        await setDoc(diaryDocRef, {
+          lastModified: new Date(),
+          createdAt: new Date(),
+          content
+        });
+      }
     }
     catch (err) {
-      console.log('error saving diary:', err, data);
+      console.log('error saving diary:', err, content);
     }
   }
 
