@@ -15,6 +15,10 @@ export const UserProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
 
   const setCurrUserAndUserDocRef = async (user) => {
+    if (!user) {
+      setUserData(null);
+      return;
+    }
     const userDocRef = await getUserDocRef(user);
     setUserData({ user, userDocRef });
   }

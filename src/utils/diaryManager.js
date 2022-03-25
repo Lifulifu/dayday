@@ -1,6 +1,4 @@
-import { db } from './firebase.utils'
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { getUserDocRef } from './firebase.utils';
 
 export class DiaryManager {
 
@@ -8,7 +6,8 @@ export class DiaryManager {
     this.userDocRef = userDocRef;
   }
 
-  async getDiary(dateStr) {
+  async fetchDiary(dateStr) {
+    console.log(`fetching diary ${dateStr}`)
     const diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);
     const diarySnap = await getDoc(diaryDocRef);
     if (diarySnap.exists)

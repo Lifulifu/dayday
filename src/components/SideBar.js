@@ -29,7 +29,7 @@ export default function SideBar() {
             onClick={() => setIsExpand(!isExpand)} />
 
           <SideBarLink icon={<AiOutlineEdit />}
-            onClick={() => setIsExpand(false)} text="Write" to="/write" />
+            onClick={() => setIsExpand(false)} text="Write" to="/" />
 
           <SideBarLink icon={<AiOutlineHistory />}
             onClick={() => setIsExpand(false)} text="History" to="/history" />
