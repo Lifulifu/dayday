@@ -1,4 +1,5 @@
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection } from "firebase/firestore";
+import { date2IsoStr } from "./common.utils";
 
 export class DiaryManager {
 
@@ -6,7 +7,8 @@ export class DiaryManager {
     this.userDocRef = userDocRef;
   }
 
-  async fetchDiary(dateStr) {
+  async fetchDiary(date) {
+    const dateStr = date2IsoStr(date);
     console.log(`fetching diary ${dateStr}`)
     const diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);
     const diarySnap = await getDoc(diaryDocRef);
@@ -15,13 +17,16 @@ export class DiaryManager {
     return null;
   }
 
-  async saveDiary(dateStr, content) {
+  async saveDiary(date, content) {
+    const dateStr = date2IsoStr(date);
+    console.log(`saving diary ${dateStr}`)
     const diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);
     const diarySnap = await getDoc(diaryDocRef);
     try {
       if (diarySnap.exists()) {
         const { createdAt } = diarySnap.data();
         await setDoc(diaryDocRef, {
+          date,
           lastModified: new Date(),
           createdAt,
           content
@@ -29,6 +34,7 @@ export class DiaryManager {
       }
       else {
         await setDoc(diaryDocRef, {
+          date,
           lastModified: new Date(),
           createdAt: new Date(),
           content
@@ -38,6 +44,12 @@ export class DiaryManager {
     catch (err) {
       console.log('error saving diary:', err, content);
     }
+  }
+
+  async fetchDiaryRange(startDateStr, days) {
+    console.log(`fetching diary from ${startDateStr}`)
+    const diaryCollRef = collection(this.userDocRef, 'diaries');
+    console.log(diaryCollRef);
   }
 
 }

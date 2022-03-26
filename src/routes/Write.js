@@ -8,14 +8,8 @@ import RightArrow from '../assets/RightArrow';
 
 import { UserContext } from '../contexts/user.context';
 import { DiaryManager } from '../utils/diaryManager';
+import { date2IsoStr } from '../utils/common.utils';
 
-const getDateStr = (date, delim = '-') => {
-  return (
-    date.getFullYear() + delim +
-    (date.getMonth() + 1) + delim +
-    date.getDate()
-  )
-}
 
 const SAVE_DIARY_COOLDOWN = 1000;
 
@@ -54,7 +48,7 @@ export default function Write() {
     setSaved(false);
     clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
-      await diaryManager.saveDiary(getDateStr(currDate.current), text);
+      await diaryManager.saveDiary(currDate.current, text);
       setSaved(true);
     }, SAVE_DIARY_COOLDOWN);
   }
@@ -64,7 +58,7 @@ export default function Write() {
     switch (animationClass) {
       case 'left-out':
         setDiaryContent(
-          getDateStr(currDate.current), await fetchedDiary.current);
+          date2IsoStr(currDate.current), await fetchedDiary.current);
         canSave.current = true;
         setAnimationClass('left-in');
         break;
@@ -74,7 +68,7 @@ export default function Write() {
         break;
       case 'right-out':
         setDiaryContent(
-          getDateStr(currDate.current), await fetchedDiary.current);
+          date2IsoStr(currDate.current), await fetchedDiary.current);
         canSave.current = true;
         setAnimationClass('right-in');
         break;
@@ -91,7 +85,7 @@ export default function Write() {
     if (!canSwitchDiary.current) return;
     currDate.current.setDate(currDate.current.getDate() + 1);
     // stage newly fetched diary before render it to editor
-    fetchedDiary.current = diaryManager.fetchDiary(getDateStr(currDate.current))
+    fetchedDiary.current = diaryManager.fetchDiary(currDate.current)
     setAnimationClass('left-out');
     canSwitchDiary.current = false;  // lock
     canSave.current = false;
@@ -101,7 +95,7 @@ export default function Write() {
     if (!canSwitchDiary.current) return;
     currDate.current.setDate(currDate.current.getDate() - 1);
     // stage newly fetched diary before render it to editor
-    fetchedDiary.current = diaryManager.fetchDiary(getDateStr(currDate.current));
+    fetchedDiary.current = diaryManager.fetchDiary(currDate.current);
     setAnimationClass('right-out');
     canSwitchDiary.current = false;  // lock
     canSave.current = false;
@@ -140,12 +134,11 @@ export default function Write() {
     if (!userData || !editor.current) return;
 
     diaryManager.setUser(userData.userDocRef);
-    const dateStr = getDateStr(currDate.current);
 
     (async function () {
-      const data = await diaryManager.fetchDiary(dateStr);
+      const data = await diaryManager.fetchDiary(currDate.current);
       fetchedDiary.current = data;
-      setDiaryContent(dateStr, data);
+      setDiaryContent(date2IsoStr(currDate.current), data);
       canSave.current = true;
     })();
 
