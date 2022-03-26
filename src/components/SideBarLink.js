@@ -1,32 +1,22 @@
 import React from 'react'
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 import { BsCircle } from 'react-icons/bs';
 
+
 function SideBarLink(props) {
-  const { icon, text, to, onClick } = props;
+  const { icon, text, to } = props;
   return (
-    <Link to={to}
-      className="h-14 flex items-center cursor-pointer hover:bg-gray-300
-    transition-all duration-200 ease-in-out"
-      onClick={onClick}>
+    <NavLink to={to}
+      className={({ isActive }) => (
+        `${isActive ? 'bg-clr-highlight text-white' : 'hover:bg-gray-300'}
+        h-14 flex items-center cursor-pointer 
+        transition-colors duration-200 ease-in-out`)}>
       <div className="w-14 flex flex-col items-center shrink-0">{icon}</div>
       <div className="flex-grow">{text}</div>
-    </Link>
+    </NavLink >
   )
-}
-
-SideBarLink.propTypes = {
-  icon: PropTypes.element,
-  text: PropTypes.string,
-  onClick: PropTypes.func,
-  to: PropTypes.string,
-}
-
-SideBarLink.defaultProps = {
-  icon: <BsCircle />,
-  text: '',
 }
 
 export default SideBarLink;
