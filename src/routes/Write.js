@@ -8,7 +8,7 @@ import RightArrow from '../assets/RightArrow';
 
 import { UserContext } from '../contexts/user.context';
 import { DiaryManager } from '../utils/diaryManager';
-import { date2IsoStr } from '../utils/common.utils';
+import { date2Str } from '../utils/common.utils';
 
 
 const SAVE_DIARY_COOLDOWN = 1000;
@@ -58,7 +58,7 @@ export default function Write() {
     switch (animationClass) {
       case 'left-out':
         setDiaryContent(
-          date2IsoStr(currDate.current), await fetchedDiary.current);
+          date2Str(currDate.current), await fetchedDiary.current);
         canSave.current = true;
         setAnimationClass('left-in');
         break;
@@ -68,7 +68,7 @@ export default function Write() {
         break;
       case 'right-out':
         setDiaryContent(
-          date2IsoStr(currDate.current), await fetchedDiary.current);
+          date2Str(currDate.current), await fetchedDiary.current);
         canSave.current = true;
         setAnimationClass('right-in');
         break;
@@ -138,7 +138,7 @@ export default function Write() {
     (async function () {
       const data = await diaryManager.fetchDiary(currDate.current);
       fetchedDiary.current = data;
-      setDiaryContent(date2IsoStr(currDate.current), data);
+      setDiaryContent(date2Str(currDate.current), data);
       canSave.current = true;
     })();
 

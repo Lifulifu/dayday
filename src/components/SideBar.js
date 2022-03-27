@@ -22,7 +22,6 @@ const SIDEBAR_ITEM_IDX = {
 export default function SideBar({ className }) {
 
   const [isExpand, setIsExpand] = useState(false);
-  const [selectedIdx, setSelectedIdx] = useState(SIDEBAR_ITEM_IDX.write);
   const itemOnClick = () => {
     setIsExpand(false);
   }

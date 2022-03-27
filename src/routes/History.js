@@ -9,27 +9,26 @@ export default function History() {
 
   const { userData } = useContext(UserContext);
   const [diaryManager, setDiaryManager] = useState(new DiaryManager());
+  const [graphData, setGraphData] = useState([]);
   const currDate = useRef(new Date());
 
-  const data = [...Array(100).keys()]
-    .map((i) => ({
-      date: date2IsoStr(offsetDate(currDate.current, -i)),  // proceed to prev day
-      level: Math.floor(Math.random() * 5),
-      count: 0
-    }))
-    .reverse();  // the order of date cannot be reversed, reverse array back to get correct order
-
-  console.log(data)
-
-
-  useEffect(() => {
+  useEffect(async () => {
     console.log('user state changed', userData);
     if (!userData) return;
 
     diaryManager.setUser(userData.userDocRef);
     const dateStr = date2IsoStr(currDate.current);
 
-    diaryManager.fetchDiaryRange(currDate.current, 3);
+    const diaries = await diaryManager.fetchDiaryRange(
+      offsetDate(currDate.current, -10), currDate.current);
+    console.log('diaries', diaries);
+    setGraphData(
+      diaries.map((diary) => ({
+        date: date2IsoStr(diary.date.toDate()),
+        level: 2,
+        count: 2
+      }))
+    )
 
   }, [userData])
 
@@ -37,7 +36,7 @@ export default function History() {
   return (
     <div className="flex flex-col items-center mt-24">
       <ActivityCalendar
-        data={data}
+        data={graphData}
         showWeekdayLabels={true}
         weekStart={1}
       />
