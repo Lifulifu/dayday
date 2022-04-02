@@ -8,14 +8,8 @@ import RightArrow from '../assets/RightArrow';
 
 import { UserContext } from '../contexts/user.context';
 import { DiaryManager } from '../utils/diaryManager';
+import { date2Str } from '../utils/common.utils';
 
-const getDateStr = (date, delim = '-') => {
-  return (
-    date.getFullYear() + delim +
-    (date.getMonth() + 1) + delim +
-    date.getDate()
-  )
-}
 
 const SAVE_DIARY_COOLDOWN = 1000;
 
@@ -30,36 +24,42 @@ export default function Write() {
 
   const [diaryManager, setDiaryManager] = useState(new DiaryManager());
   const [animationClass, setAnimationClass] = useState('');
+  const [displayDate, setDisplayDate] = useState('');
 
   // set content or just title if content is empty
-  const setDiaryContent = async (dateStr, data) => {
+  const setDiaryContent = (dateStr, data) => {
     console.log('set diary', dateStr, data)
-    if (data)
+    if (data) {
+      setDisplayDate(dateStr);
       editor.current.value(data.content);
-    else
+    }
+    else {
+      setDisplayDate(dateStr);
       editor.current.value('');
+    }
   }
 
   const timer = useRef(null);
   const [saved, setSaved] = useState(true);
+  const canSave = useRef(false);
 
   const triggerAutoSave = async (text) => {
-    if (!text || text.length === 0) return;
+    if (text === null || !canSave.current) return;
     setSaved(false);
     clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
-      await diaryManager.saveDiary(getDateStr(currDate.current), text);
+      await diaryManager.saveDiary(currDate.current, text);
       setSaved(true);
     }, SAVE_DIARY_COOLDOWN);
   }
 
   // pause slide-in animation until new diary data is ready
   const proceedAnimation = async () => {
-    console.log('animation', animationClass)
     switch (animationClass) {
       case 'left-out':
         setDiaryContent(
-          getDateStr(currDate.current), await fetchedDiary.current);
+          date2Str(currDate.current), await fetchedDiary.current);
+        canSave.current = true;
         setAnimationClass('left-in');
         break;
       case 'left-in':
@@ -68,7 +68,8 @@ export default function Write() {
         break;
       case 'right-out':
         setDiaryContent(
-          getDateStr(currDate.current), await fetchedDiary.current);
+          date2Str(currDate.current), await fetchedDiary.current);
+        canSave.current = true;
         setAnimationClass('right-in');
         break;
       case 'right-in':
@@ -84,18 +85,20 @@ export default function Write() {
     if (!canSwitchDiary.current) return;
     currDate.current.setDate(currDate.current.getDate() + 1);
     // stage newly fetched diary before render it to editor
-    fetchedDiary.current = diaryManager.fetchDiary(getDateStr(currDate.current))
+    fetchedDiary.current = diaryManager.fetchDiary(currDate.current)
     setAnimationClass('left-out');
     canSwitchDiary.current = false;  // lock
+    canSave.current = false;
   }
 
   const toPrevDay = async () => {
     if (!canSwitchDiary.current) return;
     currDate.current.setDate(currDate.current.getDate() - 1);
     // stage newly fetched diary before render it to editor
-    fetchedDiary.current = diaryManager.fetchDiary(getDateStr(currDate.current));
+    fetchedDiary.current = diaryManager.fetchDiary(currDate.current);
     setAnimationClass('right-out');
     canSwitchDiary.current = false;  // lock
+    canSave.current = false;
   }
 
   // on mounted
@@ -131,33 +134,33 @@ export default function Write() {
     if (!userData || !editor.current) return;
 
     diaryManager.setUser(userData.userDocRef);
-    const dateStr = getDateStr(currDate.current);
 
     (async function () {
-      const data = await diaryManager.fetchDiary(dateStr);
+      const data = await diaryManager.fetchDiary(currDate.current);
       fetchedDiary.current = data;
-      setDiaryContent(dateStr, data);
+      setDiaryContent(date2Str(currDate.current), data);
+      canSave.current = true;
     })();
 
   }, [userData, editor.current])
 
 
   return (
-    <div className="relative pt-8 h-screen bg-gray-100">
-      <div className="flex flex-col items-center overflow-hidden">
+    <>
+      <div className="relative pt-16 h-screen overflow-x-hidden">
+        <div className="flex flex-col items-center overflow-hidden">
 
-        <div>
-          <LeftArrow className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2" onClick={toPrevDay} />
-          <RightArrow className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2" onClick={toNextDay} />
+          <LeftArrow className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 z-10" onClick={toPrevDay} />
+          <RightArrow className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 z-10" onClick={toNextDay} />
+
+          <div className={`w-full md:max-w-2xl z-0 ${animationClass}`} onAnimationEnd={proceedAnimation}>
+            <h1 className='text-4xl'>{displayDate}</h1>
+            <div id="editor-container"></div>
+            <div>{saved ? 'saved' : 'saving...'}</div>
+          </div>
+
         </div>
-
-        <div className={`w-full md:max-w-2xl ${animationClass}`} onAnimationEnd={proceedAnimation}>
-          <h1 className='text-4xl'>{getDateStr(currDate.current)}</h1>
-          <div id="editor-container"></div>
-          <div>{saved ? 'saved' : 'saving...'}</div>
-        </div>
-
-      </div>
-    </div >
+      </div >
+    </>
   )
 }

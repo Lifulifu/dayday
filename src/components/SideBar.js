@@ -11,17 +11,28 @@ import {
   AiOutlineSetting
 } from 'react-icons/ai'
 
+const SIDEBAR_ITEM_IDX = {
+  write: 1,
+  history: 2,
+  routine: 3,
+  profile: 4,
+  setting: 5
+}
 
-export default function SideBar() {
+export default function SideBar({ className }) {
+
   const [isExpand, setIsExpand] = useState(false);
+  const itemOnClick = () => {
+    setIsExpand(false);
+  }
 
   return (
     <>
       <nav className={`${isExpand ? 'w-72' : 'w-14'}
-      fixed top-0 left-0 h-screen z-50
+      fixed top-0 left-0 h-screen
       flex flex-col overflow-hidden justify-between
       bg-gray-200 text-gray-800 shadow-md
-      transition-all duration-200 ease-in-out` }>
+      transition-all duration-200 ease-in-out ${className}`}>
 
         <div className='flex flex-col overflow-hidden'>
           <SideBarItem icon={
@@ -29,21 +40,21 @@ export default function SideBar() {
             onClick={() => setIsExpand(!isExpand)} />
 
           <SideBarLink icon={<AiOutlineEdit />}
-            onClick={() => setIsExpand(false)} text="Write" to="/" />
+            text="Write" to="/" onClick={itemOnClick} />
 
           <SideBarLink icon={<AiOutlineHistory />}
-            onClick={() => setIsExpand(false)} text="History" to="/history" />
+            text="History" to="/history" onClick={itemOnClick} />
 
           <SideBarLink icon={<BsCalendarCheck />}
-            onClick={() => setIsExpand(false)} text="Routine" to="/routine" />
+            text="Routine" to="/routine" onClick={itemOnClick} />
         </div>
 
         <div className='flex flex-col overflow-hidden'>
           <SideBarLink icon={<AiOutlineUser />}
-            onClick={() => setIsExpand(false)} text="Login" to="/profile" />
+            text="Account" to="/account" onClick={itemOnClick} />
 
-          <SideBarItem icon={<AiOutlineSetting />}
-            onClick={() => setIsExpand(false)} text="Setting" />
+          <SideBarLink icon={<AiOutlineSetting />}
+            text="Setting" to="/setting" onClick={itemOnClick} />
 
           <div className="h-4"></div>
         </div>
@@ -51,7 +62,7 @@ export default function SideBar() {
       </nav>
 
       <div className={`${isExpand ? 'opacity-30' : 'hidden opacity-0'}
-      w-screen h-screen fixed bg-black z-40 
+      fixed inset-0 bg-black
       transition-all duration-200 ease-in-out` }
         onClick={() => setIsExpand(false)}></div>
     </>

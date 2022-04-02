@@ -6,7 +6,7 @@ module.exports = {
         'montserrat': ["'montserrat'", 'sans-serif'],
       },
       colors: {
-        'clr-highlight': '#7DA2A9',
+        'clr-highlight': '#72a3a2',
         'clr-text': '#232323',
         'clr-bg': '#F7F7F7'
       },
