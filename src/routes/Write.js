@@ -3,7 +3,6 @@ import { React, useState, useRef, useEffect, useContext } from 'react'
 import EasyMDE from "easymde";
 import "easymde/dist/easymde.min.css";
 import "./easymde-override-style.css";
-import RoundButton from '../components/RoundButton';
 import LeftArrow from '../assets/LeftArrow';
 import RightArrow from '../assets/RightArrow';
 
