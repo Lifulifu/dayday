@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useContext } from 'react'
-import ActivityCalendar from 'react-activity-calendar'
+import Calendar from 'react-github-contribution-calendar'
 
 import { date2IsoStr, offsetDate } from '../utils/common.utils';
 import { UserContext } from '../contexts/user.context';
@@ -35,11 +35,6 @@ export default function History() {
 
   return (
     <div className="flex flex-col items-center mt-24">
-      <ActivityCalendar
-        data={graphData}
-        showWeekdayLabels={true}
-        weekStart={1}
-      />
     </div>
   )
 }

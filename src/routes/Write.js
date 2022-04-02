@@ -16,19 +16,21 @@ const SAVE_DIARY_COOLDOWN = 1000;
 export default function Write() {
 
   const { userData } = useContext(UserContext);
+  console.log('fc userData', userData)
 
   const currDate = useRef(new Date());
   const fetchedDiary = useRef(null);  // stage newly fetched diary before render it to editor
   const editor = useRef(null);
-  const canSwitchDiary = useRef(true);
+  const canSwitchDiary = useRef(true);  // debounce switching diary
 
   const [diaryManager, setDiaryManager] = useState(new DiaryManager());
   const [animationClass, setAnimationClass] = useState('');
   const [displayDate, setDisplayDate] = useState('');
+  const [saved, setSaved] = useState(true);
 
   // set content or just title if content is empty
-  const setDiaryContent = (dateStr, data) => {
-    console.log('set diary', dateStr, data)
+  const displayDiaryContent = (dateStr, data) => {
+    console.log('display diary', dateStr, data)
     if (data) {
       setDisplayDate(dateStr);
       editor.current.value(data.content);
@@ -40,11 +42,10 @@ export default function Write() {
   }
 
   const timer = useRef(null);
-  const [saved, setSaved] = useState(true);
-  const canSave = useRef(false);
+  const canSave = useRef(true);  // disable autosave when animation is running
 
   const triggerAutoSave = async (text) => {
-    if (text === null || !canSave.current) return;
+    if (text === null || !canSave.current || !userData) return;
     setSaved(false);
     clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
@@ -53,21 +54,21 @@ export default function Write() {
     }, SAVE_DIARY_COOLDOWN);
   }
 
-  // pause slide-in animation until new diary data is ready
   const proceedAnimation = async () => {
     switch (animationClass) {
-      case 'left-out':
-        setDiaryContent(
+      // pause slide-in animation until new diary data is ready (await fetchedDiary.current)
+      case 'left-out':  // editor is hidden
+        displayDiaryContent(
           date2Str(currDate.current), await fetchedDiary.current);
         canSave.current = true;
         setAnimationClass('left-in');
         break;
-      case 'left-in':
+      case 'left-in':  // editor is back, animation finished
         setAnimationClass('');
-        canSwitchDiary.current = true;  // animation finished
+        canSwitchDiary.current = true;
         break;
       case 'right-out':
-        setDiaryContent(
+        displayDiaryContent(
           date2Str(currDate.current), await fetchedDiary.current);
         canSave.current = true;
         setAnimationClass('right-in');
@@ -107,23 +108,14 @@ export default function Write() {
     const containerDom = document.getElementById('editor-container');
     const editorDom = document.createElement('textarea');
     containerDom.append(editorDom);
-    const newEditor = new EasyMDE({
+    editor.current = new EasyMDE({
       element: editorDom,  // will be sibling of editorDom, child of containerDom
       autofocus: true,
       toolbar: false,
       spellChecker: false
     });
 
-    // on Editor change
-    const onChangeHandler = (cm, delta) => {
-      if (!userData) return;
-      triggerAutoSave(cm.getValue());
-    }
-    newEditor.codemirror.on('change', onChangeHandler);
-    editor.current = newEditor;
-
     return () => {  // remove everything in container
-      newEditor.codemirror.off('change', onChangeHandler);
       containerDom.innerHTML = '';
     }
   }, []);
@@ -133,15 +125,24 @@ export default function Write() {
     console.log('user state changed', userData);
     if (!userData || !editor.current) return;
 
-    diaryManager.setUser(userData.userDocRef);
+    // add eventlistener here because the handler depends on userData
+    const onChangeHandler = (cm, delta) => {
+      triggerAutoSave(cm.getValue());
+    }
+    editor.current.codemirror.on('change', onChangeHandler);
 
+    // fetch today's diary and display to editor
+    diaryManager.setUser(userData.userDocRef);
     (async function () {
       const data = await diaryManager.fetchDiary(currDate.current);
       fetchedDiary.current = data;
-      setDiaryContent(date2Str(currDate.current), data);
+      displayDiaryContent(date2Str(currDate.current), data);
       canSave.current = true;
     })();
 
+    return () => {
+      editor.current.codemirror.off('change', onChangeHandler);
+    }
   }, [userData, editor.current])
 
 
