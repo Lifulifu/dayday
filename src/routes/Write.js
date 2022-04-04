@@ -16,7 +16,6 @@ const SAVE_DIARY_COOLDOWN = 1000;
 export default function Write() {
 
   const { userData } = useContext(UserContext);
-  console.log('fc userData', userData)
 
   const currDate = useRef(new Date());
   const fetchedDiary = useRef(null);  // stage newly fetched diary before render it to editor
