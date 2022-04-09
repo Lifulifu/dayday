@@ -13,6 +13,57 @@ import { UserContext } from '../contexts/user.context';
 import { DiaryManager } from '../utils/diaryManager';
 import { date2Str, offsetDate, isToday } from '../utils/common.utils';
 
+import React, { Component } from 'react'
+
+export default class Write extends Component {
+  constructor() {
+
+  }
+
+  render() {
+    return (
+      <>
+        <div className="relative pt-16 h-screen overflow-x-hidden">
+          <div className="flex flex-col items-center overflow-hidden">
+
+            <div className={`w-full md:max-w-2xl -z-0 ${animationClass}`}
+              onAnimationEnd={editorFadeOutAnimationEndHandler}>
+              <div className='flex flex-start items-center'>
+                <AiOutlineLeft onClick={() => setCurrDate(offsetDate(currDate, -1))}
+                  className='text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
+                <div>
+                  <DatePicker
+                    onChange={(date) => setCurrDate(date)}
+                    selected={currDate}
+                    customInput={
+                      <div className='flex justify-center items-center cursor-pointer 
+                    w-56 text-center p-4 rounded-lg hover:bg-gray-100 text-4xl flex-shrink-0'>
+                        {
+                          isToday(displayedDate) ?
+                            <AiTwotonePlayCircle size='10' className='text-clr-highlight mr-2' /> : null
+                        }
+                        <h1>{date2Str(displayedDate)}</h1>
+                      </div>
+                    } />
+                </div>
+                <AiOutlineRight onClick={() => setCurrDate(offsetDate(currDate, 1))}
+                  className='text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
+              </div>
+
+              <div id="editor-container"></div>
+              <div>{saved ? 'saved' : 'saving...'}</div>
+
+            </div>
+
+          </div>
+        </div >
+      </>
+    )
+
+  }
+}
+
+
 
 const SAVE_DIARY_COOLDOWN = 1000;
 

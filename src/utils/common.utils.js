@@ -10,3 +10,5 @@ export const offsetDate = (date, offset) => {
   newDate.setDate(date.getDate() + offset);
   return newDate;
 }
+
+export const isToday = (date) => date2IsoStr(date) === date2IsoStr(new Date());
