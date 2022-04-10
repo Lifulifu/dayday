@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import SideBarItem from './SideBarItem'
 import SideBarLink from './SideBarLink'
-import { BsCalendarCheck } from 'react-icons/bs'
 import {
   AiOutlineMenu,
   AiOutlineClose,
   AiOutlineEdit,
-  AiOutlineHistory,
   AiOutlineUser,
+  AiOutlineSearch,
   AiOutlineSetting
 } from 'react-icons/ai'
 
@@ -40,17 +39,14 @@ export default function SideBar({ className }) {
           <SideBarLink icon={<AiOutlineEdit />}
             text="Write" to="/" onClick={onItemClick} />
 
-          <SideBarLink icon={<AiOutlineHistory />}
-            text="History" to="/history" onClick={onItemClick} />
+          <SideBarLink icon={<AiOutlineSearch />}
+            text="Search" to="/search" onClick={onItemClick} />
 
-          <SideBarLink icon={<BsCalendarCheck />}
-            text="Routine" to="/routine" onClick={onItemClick} />
+          <SideBarLink icon={<AiOutlineUser />}
+            text="Profile" to="/profile" onClick={onItemClick} />
         </div>
 
         <div className='flex flex-col overflow-hidden'>
-          <SideBarLink icon={<AiOutlineUser />}
-            text="Account" to="/account" onClick={onItemClick} />
-
           <SideBarLink icon={<AiOutlineSetting />}
             text="Setting" to="/setting" onClick={onItemClick} />
 

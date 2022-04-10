@@ -80,7 +80,8 @@ export default function Write() {
       element: editorDom,  // will be sibling of editorDom, child of containerDom
       autofocus: true,
       toolbar: false,
-      spellChecker: false
+      spellChecker: false,
+      placeholder: '# Write something ...'
     });
 
     return () => {  // remove everything in container
@@ -137,9 +138,10 @@ export default function Write() {
 
           <div className={`w-full md:max-w-2xl -z-0 ${animationClass}`}
             onAnimationEnd={editorFadeOutAnimationEndHandler}>
-            <div className='flex flex-start items-center'>
+            <div className='flex sm:justify-start justify-center items-center'>
               <AiOutlineLeft onClick={() => changeDate(offsetDate(currDate, -1))}
                 className='flex-shrink-0 text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
+
               <div>
                 <DatePicker
                   onChange={(date) => changeDate(date)}
@@ -155,12 +157,12 @@ export default function Write() {
                     </div>
                   } />
               </div>
+
               <AiOutlineRight onClick={() => changeDate(offsetDate(currDate, 1))}
                 className='flex-shrink-0 text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
             </div>
 
             <div id="editor-container"></div>
-            <div>{saved ? 'saved' : 'saving...'}</div>
 
           </div>
 

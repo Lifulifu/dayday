@@ -22,7 +22,7 @@ export class DiaryManager {
     console.log(`saving diary ${dateStr}`)
     const diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);
     const diarySnap = await getDoc(diaryDocRef);
-    date.setUTCHours(0, 0, 0);  // round to start of day
+    date.setUTCHours(0, 0, 0, 0);  // round to start of day
     try {
       if (diarySnap.exists()) {
         const { createdAt } = diarySnap.data();
@@ -30,7 +30,8 @@ export class DiaryManager {
           date,
           lastModified: new Date(),
           createdAt,
-          content
+          content,
+          length: content.length
         });
       }
       else {
@@ -38,7 +39,8 @@ export class DiaryManager {
           date,
           lastModified: new Date(),
           createdAt: new Date(),
-          content
+          content,
+          length: content.length
         });
       }
     }
@@ -47,18 +49,20 @@ export class DiaryManager {
     }
   }
 
-  async fetchDiaryRange(startDate, endDate) {
+  async fetchDiaries(startDate, endDate) {
     endDate = endDate ?? new Date();
-    startDate.setUTCHours(0, 0, 0, 0);
-    endDate.setUTCHours(0, 0, 0, 0);
-    console.log(`fetching diary from ${date2Str(startDate)} to ${date2Str(endDate)}`)
+    const end = new Date(endDate.valueOf());
+    const start = new Date(startDate.valueOf());
+    // start.setUTCHours(0, 0, 0, 0);
+    end.setUTCHours(0, 0, 0, 0);
+    console.log(`fetching diary from ${date2Str(start)} to ${date2Str(end)}`)
 
     const result = [];
     try {
       const diaryCollRef = collection(this.userDocRef, 'diaries');
       const q = query(diaryCollRef,
-        where('date', '>=', startDate),
-        where('date', '<=', endDate));
+        where('date', '>=', start),
+        where('date', '<=', end));
       const snap = await getDocs(q);
       snap.forEach((e) => {
         result.push(e.data());
