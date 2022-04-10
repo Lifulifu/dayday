@@ -58,7 +58,7 @@ export default function Account() {
 
   return (<> {
     userData ?
-      <div className='flex flex-col items-center px-6 mt-8' >
+      <div className='flex flex-col items-center px-6 pt-8' >
 
         <img src={userData.user.photoURL} alt="user photo" className="rounded-full" />
         <h1 className="text-2xl mt-4">{userData.user.displayName}</h1>
