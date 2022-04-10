@@ -27,9 +27,9 @@ function App() {
         </SquareButton>
       </Modal>
 
-      <SideBar className="z-40" />
+      <SideBar className="fixed z-40" />
 
-      <div className="reletive pl-14 z-30">
+      <div className="reletive sm:pl-14 z-30">
         <Routes>
           <Route exact path="/" element={<Write />} />
           <Route path="/history" element={<History />} />

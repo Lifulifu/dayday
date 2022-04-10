@@ -1,4 +1,3 @@
-
 export const date2IsoStr = (date) => date.toISOString().slice(0, 10);
 
 export const date2Str = (date) => (

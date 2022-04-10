@@ -11,7 +11,7 @@ import { AiOutlineRight, AiOutlineLeft, AiTwotonePlayCircle } from 'react-icons/
 
 import { UserContext } from '../contexts/user.context';
 import { DiaryManager } from '../utils/diaryManager';
-import { date2Str, offsetDate, isToday } from '../utils/common.utils';
+import { date2Str, offsetDate, isToday, date2IsoStr } from '../utils/common.utils';
 
 
 const SAVE_DIARY_COOLDOWN = 1000;
@@ -45,14 +45,29 @@ export default function Write() {
   const timer = useRef(null);
   const canSave = useRef(true);  // disable autosave when animation is running
 
-  const triggerAutoSave = async (text) => {
+  const triggerAutoSave = async (date, text) => {
     if (text === null || !canSave.current || !userData) return;
     setSaved(false);
     clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
-      await diaryManager.saveDiary(currDate, text);
+      await diaryManager.saveDiary(date, text);
       setSaved(true);
     }, SAVE_DIARY_COOLDOWN);
+  }
+
+  const forceSave = async (date, text) => {  // no debouncing, instant save
+    console.log('force save diary', date2Str(date));
+    setSaved(false);
+    clearTimeout(timer.current);
+    await diaryManager.saveDiary(date, text);
+    setSaved(true);
+  }
+
+  // force save diary for currDate before date changes
+  const changeDate = (newDate) => {
+    if (!editor.current || !userData) return;
+    forceSave(currDate, editor.current.value());
+    setCurrDate(newDate);
   }
 
   // on mounted
@@ -76,34 +91,35 @@ export default function Write() {
   // on user and editor set
   useEffect(async () => {
     console.log('user state changed', userData);
-    if (!userData || !editor.current) return;
-
-    // add eventlistener here because the handler depends on userData
-    const onChangeHandler = (cm, delta) => {
-      triggerAutoSave(cm.getValue());
-    }
-    editor.current.codemirror.on('change', onChangeHandler);
+    if (!userData) return;
 
     // fetch today's diary and display to editor
     diaryManager.setUser(userData.userDocRef);
-    const data = await diaryManager.fetchDiary(currDate);
-    fetchedDiary.current = data;
-    displayDiaryContent(currDate, data);
     canSave.current = true;
 
-    return () => {
-      editor.current.codemirror.off('change', onChangeHandler);
-    }
-  }, [userData, editor.current])
+  }, [userData])
 
   // on current date change
   useEffect(() => {
     console.log('curr date changed', date2Str(currDate))
     if (!canSwitchDiary || !userData || !editor.current) return;
+
+    // triggerAutoSave depends on userData, editor and currDate
+    // need to rebind every time the dependancy changes, see:
+    // https://stackoverflow.com/questions/53845595/wrong-react-hooks-behaviour-with-event-listener
+    const onChangeHandler = (cm, delta) => {
+      triggerAutoSave(currDate, cm.getValue());
+    }
+    editor.current.codemirror.on('change', onChangeHandler);
+
     canSwitchDiary.current = false;
     fetchedDiary.current = diaryManager.fetchDiary(currDate);
     setAnimationClass('fade-out');
-  }, [currDate])
+
+    return () => {
+      editor.current.codemirror.off('change', onChangeHandler);
+    }
+  }, [userData, editor.current, currDate])
 
   // on editor faded out
   const editorFadeOutAnimationEndHandler = async (e) => {
@@ -116,21 +132,21 @@ export default function Write() {
 
   return (
     <>
-      <div className="relative pt-16 h-screen overflow-x-hidden">
+      <div className="relative pt-16 px-6 overflow-x-hidden">
         <div className="flex flex-col items-center overflow-hidden">
 
           <div className={`w-full md:max-w-2xl -z-0 ${animationClass}`}
             onAnimationEnd={editorFadeOutAnimationEndHandler}>
             <div className='flex flex-start items-center'>
-              <AiOutlineLeft onClick={() => setCurrDate(offsetDate(currDate, -1))}
-                className='text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
+              <AiOutlineLeft onClick={() => changeDate(offsetDate(currDate, -1))}
+                className='flex-shrink-0 text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
               <div>
                 <DatePicker
-                  onChange={(date) => setCurrDate(date)}
+                  onChange={(date) => changeDate(date)}
                   selected={currDate}
                   customInput={
                     <div className='flex justify-center items-center cursor-pointer 
-                    w-56 text-center p-4 rounded-lg hover:bg-gray-100 text-4xl flex-shrink-0'>
+                    w-56 text-center px-2 py-4 rounded-lg hover:bg-gray-100 text-4xl flex-shrink-0'>
                       {
                         isToday(displayedDate) ?
                           <AiTwotonePlayCircle size='10' className='text-clr-highlight mr-2' /> : null
@@ -139,8 +155,8 @@ export default function Write() {
                     </div>
                   } />
               </div>
-              <AiOutlineRight onClick={() => setCurrDate(offsetDate(currDate, 1))}
-                className='text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
+              <AiOutlineRight onClick={() => changeDate(offsetDate(currDate, 1))}
+                className='flex-shrink-0 text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
             </div>
 
             <div id="editor-container"></div>
