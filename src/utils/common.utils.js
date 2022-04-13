@@ -7,7 +7,6 @@ export const date2Str = (date) => (
 
 export const offsetDate = (date, offset) => {
   const newDate = new Date(date.valueOf());
-  newDate.setUTCHours(0, 0, 0, 0);
   newDate.setDate(newDate.getDate() + offset);
   return newDate;
 }

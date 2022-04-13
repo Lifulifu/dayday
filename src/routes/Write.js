@@ -2,10 +2,10 @@ import { React, useState, useRef, useEffect, useContext } from 'react'
 
 import EasyMDE from "easymde";
 import "easymde/dist/easymde.min.css";
-import "./easymde-override-style.css";
+import "./override-styles.css";
 import "react-datepicker/dist/react-datepicker.css";
 
-// import DaydayDatePicker from '../components/DaydayDatePicker';
+import DiaryTopBar from '../components/DiaryTopBar';
 import DatePicker from 'react-datepicker';
 import { AiOutlineRight, AiOutlineLeft, AiTwotonePlayCircle } from 'react-icons/ai'
 
@@ -133,6 +133,8 @@ export default function Write() {
 
   return (
     <>
+      <DiaryTopBar date={displayedDate} saved={saved} />
+
       <div className="relative pt-16 px-6 overflow-x-hidden">
         <div className="flex flex-col items-center overflow-hidden">
 
@@ -146,6 +148,7 @@ export default function Write() {
                 <DatePicker
                   onChange={(date) => changeDate(date)}
                   selected={currDate}
+                  todayButton='Today'
                   customInput={
                     <div className='flex justify-center items-center cursor-pointer 
                     w-56 text-center px-2 py-4 rounded-lg hover:bg-gray-100 text-4xl flex-shrink-0'>

@@ -20,13 +20,15 @@ export default function SideBar({ className }) {
 
   return (
     <div className={className}>
+      {/* menu expand button, hided behind sideBar nav if not mobile screen */}
       <div className="w-14 h-14 flex flex-col items-center justify-center shrink-0 cursor-pointer
       hover:bg-gray-100 transition-colors duration-200 ease-in-out z-10"
         onClick={() => setIsExpand(true)}>
         <AiOutlineMenu /></div>
 
+      {/* actual sideBar nav */}
       <nav className={`${isExpand ? 'w-72' : 'w-0 sm:w-14'}
-      fixed top-0 left-0 h-screen
+      fixed left-0 inset-y-0
       flex flex-col overflow-hidden justify-between
       bg-gray-200 text-gray-800 shadow-md
       transition-all duration-200 ease-in-out z-20`}>
@@ -55,6 +57,7 @@ export default function SideBar({ className }) {
 
       </nav>
 
+      {/* cover background */}
       <div className={`${isExpand ? 'opacity-30' : 'hidden opacity-0'}
       fixed inset-0 bg-black
       transition-all duration-200 ease-in-out z-0` }

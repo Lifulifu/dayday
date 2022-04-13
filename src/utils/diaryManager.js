@@ -17,11 +17,13 @@ export class DiaryManager {
     return null;
   }
 
-  async saveDiary(date, content) {
-    const dateStr = date2Str(date);
+  async saveDiary(inDate, content) {
+    const dateStr = date2Str(inDate);
     console.log(`saving diary ${dateStr}`)
     const diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);
     const diarySnap = await getDoc(diaryDocRef);
+
+    const date = new Date(inDate.valueOf());
     date.setUTCHours(0, 0, 0, 0);  // round to start of day
     try {
       if (diarySnap.exists()) {

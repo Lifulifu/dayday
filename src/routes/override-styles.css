@@ -1,0 +1,20 @@
+/* easy mde */
+.CodeMirror.cm-s-easymde.CodeMirror-wrap {
+  border: none;
+  padding: 0;
+}
+
+.cm-s-easymde .cm-header-1.cm-header-1 {
+  font-size: 150%;
+}
+
+/* react date picker */
+.react-datepicker__day--selected {
+  border-radius: 50% !important;
+  background-color: #72a3a2 !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  border-radius: 50% !important;
+  background-color: #a9caca !important;
+}
