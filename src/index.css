@@ -8,62 +8,28 @@
   }
 }
 
-.left-out {
-  animation: left-out 300ms cubic-bezier(0, 0, 0, 0.95) forwards;
+.fade-out {
+  animation: fade-out 200ms forwards;
 }
 
-.left-in {
-  animation: left-in 300ms cubic-bezier(0, 0, 0, 0.95) forwards;
+.fade-in {
+  animation: fade-in 200ms forwards;
 }
 
-.right-out {
-  animation: right-out 300ms cubic-bezier(0, 0, 0, 0.95) forwards;
-}
-
-.right-in {
-  animation: right-in 300ms cubic-bezier(0, 0, 0, 0.95) forwards;
-}
-
-@keyframes left-out {
+@keyframes fade-out {
   0% {
-    transform: translateX(0);
     opacity: 1;
   }
   100% {
-    transform: translateX(-70%);
     opacity: 0;
   }
 }
 
-@keyframes left-in {
+@keyframes fade-in {
   0% {
-    transform: translateX(70%);
     opacity: 0;
   }
   100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes right-out {
-  0% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(70%);
-    opacity: 0;
-  }
-}
-
-@keyframes right-in {
-  0% {
-    transform: translateX(-70%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0);
     opacity: 1;
   }
 }

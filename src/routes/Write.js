@@ -3,12 +3,15 @@ import { React, useState, useRef, useEffect, useContext } from 'react'
 import EasyMDE from "easymde";
 import "easymde/dist/easymde.min.css";
 import "./easymde-override-style.css";
-import LeftArrow from '../assets/LeftArrow';
-import RightArrow from '../assets/RightArrow';
+import "react-datepicker/dist/react-datepicker.css";
+
+// import DaydayDatePicker from '../components/DaydayDatePicker';
+import DatePicker from 'react-datepicker';
+import { AiOutlineRight, AiOutlineLeft, AiTwotonePlayCircle } from 'react-icons/ai'
 
 import { UserContext } from '../contexts/user.context';
 import { DiaryManager } from '../utils/diaryManager';
-import { date2Str } from '../utils/common.utils';
+import { date2Str, offsetDate, isToday, date2IsoStr } from '../utils/common.utils';
 
 
 const SAVE_DIARY_COOLDOWN = 1000;
@@ -17,88 +20,54 @@ export default function Write() {
 
   const { userData } = useContext(UserContext);
 
-  const currDate = useRef(new Date());
   const fetchedDiary = useRef(null);  // stage newly fetched diary before render it to editor
   const editor = useRef(null);
-  const canSwitchDiary = useRef(true);
+  const canSwitchDiary = useRef(true);  // debounce switching diary
 
+  const [currDate, setCurrDate] = useState(new Date());
+  const [displayedDate, setDisplayedDate] = useState(new Date());  // will align with currDate when diary is fetched
   const [diaryManager, setDiaryManager] = useState(new DiaryManager());
   const [animationClass, setAnimationClass] = useState('');
-  const [displayDate, setDisplayDate] = useState('');
+  const [saved, setSaved] = useState(true);
 
   // set content or just title if content is empty
-  const setDiaryContent = (dateStr, data) => {
-    console.log('set diary', dateStr, data)
+  const displayDiaryContent = (date, data) => {
+    console.log('display diary', date2Str(date), data)
+    setDisplayedDate(date);
     if (data) {
-      setDisplayDate(dateStr);
       editor.current.value(data.content);
     }
     else {
-      setDisplayDate(dateStr);
       editor.current.value('');
     }
   }
 
   const timer = useRef(null);
-  const [saved, setSaved] = useState(true);
-  const canSave = useRef(false);
+  const canSave = useRef(true);  // disable autosave when animation is running
 
-  const triggerAutoSave = async (text) => {
-    if (text === null || !canSave.current) return;
+  const triggerAutoSave = async (date, text) => {
+    if (text === null || !canSave.current || !userData) return;
     setSaved(false);
     clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
-      await diaryManager.saveDiary(currDate.current, text);
+      await diaryManager.saveDiary(date, text);
       setSaved(true);
     }, SAVE_DIARY_COOLDOWN);
   }
 
-  // pause slide-in animation until new diary data is ready
-  const proceedAnimation = async () => {
-    switch (animationClass) {
-      case 'left-out':
-        setDiaryContent(
-          date2Str(currDate.current), await fetchedDiary.current);
-        canSave.current = true;
-        setAnimationClass('left-in');
-        break;
-      case 'left-in':
-        setAnimationClass('');
-        canSwitchDiary.current = true;  // animation finished
-        break;
-      case 'right-out':
-        setDiaryContent(
-          date2Str(currDate.current), await fetchedDiary.current);
-        canSave.current = true;
-        setAnimationClass('right-in');
-        break;
-      case 'right-in':
-        setAnimationClass('');
-        canSwitchDiary.current = true;
-        break;
-      default:
-        console.log(`Unexpected animationClass: '${animationClass}'`)
-    }
+  const forceSave = async (date, text) => {  // no debouncing, instant save
+    console.log('force save diary', date2Str(date));
+    setSaved(false);
+    clearTimeout(timer.current);
+    await diaryManager.saveDiary(date, text);
+    setSaved(true);
   }
 
-  const toNextDay = () => {
-    if (!canSwitchDiary.current) return;
-    currDate.current.setDate(currDate.current.getDate() + 1);
-    // stage newly fetched diary before render it to editor
-    fetchedDiary.current = diaryManager.fetchDiary(currDate.current)
-    setAnimationClass('left-out');
-    canSwitchDiary.current = false;  // lock
-    canSave.current = false;
-  }
-
-  const toPrevDay = async () => {
-    if (!canSwitchDiary.current) return;
-    currDate.current.setDate(currDate.current.getDate() - 1);
-    // stage newly fetched diary before render it to editor
-    fetchedDiary.current = diaryManager.fetchDiary(currDate.current);
-    setAnimationClass('right-out');
-    canSwitchDiary.current = false;  // lock
-    canSave.current = false;
+  // force save diary for currDate before date changes
+  const changeDate = (newDate) => {
+    if (!editor.current || !userData) return;
+    forceSave(currDate, editor.current.value());
+    setCurrDate(newDate);
   }
 
   // on mounted
@@ -107,56 +76,94 @@ export default function Write() {
     const containerDom = document.getElementById('editor-container');
     const editorDom = document.createElement('textarea');
     containerDom.append(editorDom);
-    const newEditor = new EasyMDE({
+    editor.current = new EasyMDE({
       element: editorDom,  // will be sibling of editorDom, child of containerDom
       autofocus: true,
       toolbar: false,
-      spellChecker: false
+      spellChecker: false,
+      placeholder: '# Write something ...'
     });
 
-    // on Editor change
-    const onChangeHandler = (cm, delta) => {
-      if (!userData) return;
-      triggerAutoSave(cm.getValue());
-    }
-    newEditor.codemirror.on('change', onChangeHandler);
-    editor.current = newEditor;
-
     return () => {  // remove everything in container
-      newEditor.codemirror.off('change', onChangeHandler);
       containerDom.innerHTML = '';
     }
   }, []);
 
   // on user and editor set
-  useEffect(() => {
+  useEffect(async () => {
     console.log('user state changed', userData);
-    if (!userData || !editor.current) return;
+    if (!userData) return;
 
+    // fetch today's diary and display to editor
     diaryManager.setUser(userData.userDocRef);
+    canSave.current = true;
 
-    (async function () {
-      const data = await diaryManager.fetchDiary(currDate.current);
-      fetchedDiary.current = data;
-      setDiaryContent(date2Str(currDate.current), data);
-      canSave.current = true;
-    })();
+  }, [userData])
 
-  }, [userData, editor.current])
+  // on current date change
+  useEffect(() => {
+    console.log('curr date changed', date2Str(currDate))
+    if (!canSwitchDiary || !userData || !editor.current) return;
 
+    // triggerAutoSave depends on userData, editor and currDate
+    // need to rebind every time the dependancy changes, see:
+    // https://stackoverflow.com/questions/53845595/wrong-react-hooks-behaviour-with-event-listener
+    const onChangeHandler = (cm, delta) => {
+      triggerAutoSave(currDate, cm.getValue());
+    }
+    editor.current.codemirror.on('change', onChangeHandler);
+
+    canSwitchDiary.current = false;
+    fetchedDiary.current = diaryManager.fetchDiary(currDate);
+    setAnimationClass('fade-out');
+
+    return () => {
+      editor.current.codemirror.off('change', onChangeHandler);
+    }
+  }, [userData, editor.current, currDate])
+
+  // on editor faded out
+  const editorFadeOutAnimationEndHandler = async (e) => {
+    if (e.animationName !== 'fade-out') return;
+    const data = await fetchedDiary.current;  // wait until diary is fetched
+    displayDiaryContent(currDate, data);
+    setAnimationClass('fade-in');
+    canSwitchDiary.current = true;
+  }
 
   return (
     <>
-      <div className="relative pt-16 h-screen overflow-x-hidden">
+      <div className="relative pt-16 px-6 overflow-x-hidden">
         <div className="flex flex-col items-center overflow-hidden">
 
-          <LeftArrow className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 z-10" onClick={toPrevDay} />
-          <RightArrow className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 z-10" onClick={toNextDay} />
+          <div className={`w-full md:max-w-2xl -z-0 ${animationClass}`}
+            onAnimationEnd={editorFadeOutAnimationEndHandler}>
+            <div className='flex sm:justify-start justify-center items-center'>
+              <AiOutlineLeft onClick={() => changeDate(offsetDate(currDate, -1))}
+                className='flex-shrink-0 text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
 
-          <div className={`w-full md:max-w-2xl z-0 ${animationClass}`} onAnimationEnd={proceedAnimation}>
-            <h1 className='text-4xl'>{displayDate}</h1>
+              <div>
+                <DatePicker
+                  onChange={(date) => changeDate(date)}
+                  selected={currDate}
+                  customInput={
+                    <div className='flex justify-center items-center cursor-pointer 
+                    w-56 text-center px-2 py-4 rounded-lg hover:bg-gray-100 text-4xl flex-shrink-0'>
+                      {
+                        isToday(displayedDate) ?
+                          <AiTwotonePlayCircle size='10' className='text-clr-highlight mr-2' /> : null
+                      }
+                      <h1>{date2Str(displayedDate)}</h1>
+                    </div>
+                  } />
+              </div>
+
+              <AiOutlineRight onClick={() => changeDate(offsetDate(currDate, 1))}
+                className='flex-shrink-0 text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
+            </div>
+
             <div id="editor-container"></div>
-            <div>{saved ? 'saved' : 'saving...'}</div>
+
           </div>
 
         </div>

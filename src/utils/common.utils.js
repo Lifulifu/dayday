@@ -6,7 +6,10 @@ export const date2Str = (date) => (
 )
 
 export const offsetDate = (date, offset) => {
-  const newDate = new Date();
-  newDate.setDate(date.getDate() + offset);
+  const newDate = new Date(date.valueOf());
+  newDate.setUTCHours(0, 0, 0, 0);
+  newDate.setDate(newDate.getDate() + offset);
   return newDate;
 }
+
+export const isToday = (date) => date2IsoStr(date) === date2IsoStr(new Date());

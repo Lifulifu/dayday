@@ -6,9 +6,9 @@ import { BsCircle } from 'react-icons/bs';
 
 
 function SideBarLink(props) {
-  const { icon, text, to } = props;
+  const { icon, text, to, onClick } = props;
   return (
-    <NavLink to={to}
+    <NavLink to={to} onClick={onClick}
       className={({ isActive }) => (
         `${isActive ? 'bg-clr-highlight text-white' : 'hover:bg-gray-300'}
         h-14 flex items-center cursor-pointer 

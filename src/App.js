@@ -3,10 +3,9 @@ import { Route, Routes } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 
 import SideBar from './components/SideBar';
-import History from './routes/History';
 import Write from './routes/Write';
-import Routine from './routes/Routine';
-import Account from './routes/Account';
+import Search from './routes/Search';
+import Profile from './routes/Profile';
 import Modal from './assets/Modal';
 import SquareButton from './assets/SquareButton';
 
@@ -27,14 +26,13 @@ function App() {
         </SquareButton>
       </Modal>
 
-      <SideBar className="z-40" />
+      <SideBar className="fixed z-40" />
 
-      <div className="reletive pl-14 z-30">
+      <div className="reletive sm:pl-14 z-30">
         <Routes>
           <Route exact path="/" element={<Write />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/routine" element={<Routine />} />
-          <Route path="/account" element={<Account />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
     </div>
