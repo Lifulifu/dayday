@@ -16,7 +16,7 @@ import { date2Str, offsetDate, isToday, date2IsoStr } from '../utils/common.util
 
 const SAVE_DIARY_COOLDOWN = 1000;
 
-export default function Write() {
+export default function Diary() {
 
   const { userData } = useContext(UserContext);
 
@@ -135,7 +135,7 @@ export default function Write() {
     <>
       <DiaryTopBar date={displayedDate} saved={saved} />
 
-      <div className="relative pt-16 px-6 overflow-x-hidden">
+      <div className="relative pt-4 px-6 overflow-x-hidden">
         <div className="flex flex-col items-center overflow-hidden">
 
           <div className={`w-full md:max-w-2xl -z-0 ${animationClass}`}

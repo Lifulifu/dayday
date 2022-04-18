@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 
 import SideBar from './components/SideBar';
-import Write from './routes/Write';
+import Diary from './routes/Diary';
 import Search from './routes/Search';
 import Profile from './routes/Profile';
 import Modal from './assets/Modal';
@@ -30,7 +30,7 @@ function App() {
 
       <div className="reletive sm:pl-14 z-30">
         <Routes>
-          <Route exact path="/" element={<Write />} />
+          <Route exact path="/" element={<Diary />} />
           <Route path="/search" element={<Search />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>

@@ -7,14 +7,14 @@ import {
   AiOutlineEdit,
   AiOutlineUser,
   AiOutlineSearch,
-  AiOutlineSetting
+  AiOutlineSetting,
 } from 'react-icons/ai'
+import { BiNote } from 'react-icons/bi'
 
 export default function SideBar({ className }) {
 
   const [isExpand, setIsExpand] = useState(false);
   const onItemClick = () => {
-    console.log('yoyo')
     setIsExpand(false);
   }
 
@@ -38,8 +38,11 @@ export default function SideBar({ className }) {
             isExpand ? <AiOutlineClose /> : <AiOutlineMenu />}
             onClick={() => setIsExpand(!isExpand)} />
 
+          <SideBarItem icon={<BiNote />}
+            text="Note" to="/note" onClick={onItemClick} />
+
           <SideBarLink icon={<AiOutlineEdit />}
-            text="Write" to="/" onClick={onItemClick} />
+            text="Diary" to="/" onClick={onItemClick} />
 
           <SideBarLink icon={<AiOutlineSearch />}
             text="Search" to="/search" onClick={onItemClick} />
