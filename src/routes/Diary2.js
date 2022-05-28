@@ -36,7 +36,10 @@ class Diary2 extends Component {
     this.state = {
       editorState: EditorState.createEmpty(compositeDecorator)
     };
-    this.onChange = editorState => this.setState({ editorState });
+  }
+
+  handleChange(editorState) {
+    this.setState({ editorState });
   }
 
   render() {
@@ -44,7 +47,7 @@ class Diary2 extends Component {
       <div className='w-full flex flex-col items-center'>
         <div className='w-full max-w-[40em] min-h-[300px] px-4'>
           <Editor
-            editorState={this.state.editorState} onChange={this.onChange} />
+            editorState={this.state.editorState} onChange={this.handleChange} />
         </div>
       </div>
     );
