@@ -15,6 +15,17 @@ import { date2Str, offsetDate, isToday, date2IsoStr } from '../utils/common.util
 
 
 const SAVE_DIARY_COOLDOWN = 1000;
+const diaryManager = new DiaryManager();
+
+const getEasyMde = (parentDom) => {
+  return new EasyMDE({
+    element: parentDom,  // will be sibling of editorDom, child of containerDom
+    autofocus: true,
+    toolbar: false,
+    spellChecker: false,
+    placeholder: '# Write something ...',
+  });
+}
 
 export default function Diary() {
 
@@ -22,11 +33,10 @@ export default function Diary() {
 
   const fetchedDiary = useRef(null);  // stage newly fetched diary before render it to editor
   const editor = useRef(null);
-  const canSwitchDiary = useRef(true);  // debounce switching diary
+  const canChangeDate = useRef(true);  // debounce switching diary
 
   const [currDate, setCurrDate] = useState(new Date());
   const [displayedDate, setDisplayedDate] = useState(new Date());  // will align with currDate when diary is fetched
-  const [diaryManager, setDiaryManager] = useState(new DiaryManager());
   const [animationClass, setAnimationClass] = useState('');
   const [saved, setSaved] = useState(true);
 
@@ -43,30 +53,20 @@ export default function Diary() {
   }
 
   const timer = useRef(null);
-  const canSave = useRef(true);  // disable autosave when animation is running
-
-  const triggerAutoSave = async (date, text) => {
-    if (text === null || !canSave.current || !userData) return;
-    setSaved(false);
-    clearTimeout(timer.current);
+  const triggerAutoSave = async (date, text, force = false) => {
+    if (text === null) return;
+    if (!force) clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       await diaryManager.saveDiary(date, text);
       setSaved(true);
     }, SAVE_DIARY_COOLDOWN);
   }
 
-  const forceSave = async (date, text) => {  // no debouncing, instant save
-    console.log('force save diary', date2Str(date));
-    setSaved(false);
-    clearTimeout(timer.current);
-    await diaryManager.saveDiary(date, text);
-    setSaved(true);
-  }
-
   // force save diary for currDate before date changes
-  const changeDate = (newDate) => {
-    if (!editor.current || !userData) return;
-    forceSave(currDate, editor.current.value());
+  const changeDate = async (newDate) => {
+    if (!canChangeDate || !editor.current || !userData) return;
+    canChangeDate.current = false;
+    triggerAutoSave(currDate, editor.current.value(), true);
     setCurrDate(newDate);
   }
 
@@ -76,51 +76,39 @@ export default function Diary() {
     const containerDom = document.getElementById('editor-container');
     const editorDom = document.createElement('textarea');
     containerDom.append(editorDom);
-    editor.current = new EasyMDE({
-      element: editorDom,  // will be sibling of editorDom, child of containerDom
-      autofocus: true,
-      toolbar: false,
-      spellChecker: false,
-      placeholder: '# Write something ...'
-    });
+    editor.current = getEasyMde(editorDom);
 
     return () => {  // remove everything in container
       containerDom.innerHTML = '';
     }
   }, []);
 
-  // on user and editor set
-  useEffect(async () => {
-    console.log('user state changed', userData);
-    if (!userData) return;
-
-    // fetch today's diary and display to editor
-    diaryManager.setUser(userData.userDocRef);
-    canSave.current = true;
-
-  }, [userData])
-
   // on current date change
   useEffect(() => {
-    console.log('curr date changed', date2Str(currDate))
-    if (!canSwitchDiary || !userData || !editor.current) return;
+    if (userData)
+      diaryManager.setUser(userData.userDocRef);
+
+    if (!userData || !editor.current) return;
 
     // triggerAutoSave depends on userData, editor and currDate
-    // need to rebind every time the dependancy changes, see:
+    // need to re-bind onchange event every time the dependancy changes, see:
     // https://stackoverflow.com/questions/53845595/wrong-react-hooks-behaviour-with-event-listener
     const onChangeHandler = (cm, delta) => {
+      setSaved(false);
       triggerAutoSave(currDate, cm.getValue());
     }
+    const onRenderLineHandler = (cm, line, ele) => { }
     editor.current.codemirror.on('change', onChangeHandler);
+    editor.current.codemirror.on('renderLine', onRenderLineHandler);
 
-    canSwitchDiary.current = false;
+    // fetch new diary and fadeout
     fetchedDiary.current = diaryManager.fetchDiary(currDate);
     setAnimationClass('fade-out');
 
     return () => {
       editor.current.codemirror.off('change', onChangeHandler);
     }
-  }, [userData, editor.current, currDate])
+  }, [userData, currDate])
 
   // on editor faded out
   const editorFadeOutAnimationEndHandler = async (e) => {
@@ -128,7 +116,7 @@ export default function Diary() {
     const data = await fetchedDiary.current;  // wait until diary is fetched
     displayDiaryContent(currDate, data);
     setAnimationClass('fade-in');
-    canSwitchDiary.current = true;
+    canChangeDate.current = true;
   }
 
   return (

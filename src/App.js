@@ -4,6 +4,7 @@ import { FcGoogle } from 'react-icons/fc';
 
 import SideBar from './components/SideBar';
 import Diary from './routes/Diary';
+import Diary2 from './routes/Diary2';
 import Search from './routes/Search';
 import Profile from './routes/Profile';
 import Modal from './assets/Modal';
@@ -30,7 +31,7 @@ function App() {
 
       <div className="reletive sm:pl-14 z-30">
         <Routes>
-          <Route exact path="/" element={<Diary />} />
+          <Route exact path="/" element={<Diary2 />} />
           <Route path="/search" element={<Search />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>

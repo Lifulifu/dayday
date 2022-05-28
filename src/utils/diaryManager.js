@@ -18,6 +18,8 @@ export class DiaryManager {
   }
 
   async saveDiary(inDate, content) {
+    if (!this.userDocRef) return;
+
     const dateStr = date2Str(inDate);
     console.log(`saving diary ${dateStr}`)
     const diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);

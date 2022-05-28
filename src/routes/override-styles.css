@@ -19,3 +19,9 @@
   border-radius: 50% !important;
   background-color: #a9caca !important;
 }
+
+/* Draft js */
+.public-DraftEditor-content {
+  min-height: 300px;
+}
+
