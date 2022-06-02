@@ -22,6 +22,6 @@
 
 /* Draft js */
 .public-DraftEditor-content {
-  min-height: 300px;
+  background-color: antiquewhite;
+  min-height: 50vh;
 }
-

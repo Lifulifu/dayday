@@ -3,10 +3,10 @@ import SquareButton from '../assets/SquareButton'
 
 import Calendar from 'react-github-contribution-calendar'
 
-import { logInWithGooglePopup, logOut } from '../utils/firebase.utils'
+import { logOut } from '../utils/firebase.utils'
 import { offsetDate, date2IsoStr } from '../utils/common.utils'
 import { UserContext } from '../contexts/user.context'
-import { DiaryManager } from '../utils/diaryManager'
+import { diaryManager } from '../utils/diaryManager'
 
 
 const PANEL_COLORS = [
@@ -29,9 +29,8 @@ const length2Level = (length) => {
   return PANEL_COLORS.length;
 }
 
-export default function Account() {
+export default function Profile() {
   const { userData } = useContext(UserContext);
-  const [diaryManager, setDiaryManager] = useState(new DiaryManager());
   const [calendarData, setCalendarData] = useState({});
   const currDate = useRef(new Date());
 

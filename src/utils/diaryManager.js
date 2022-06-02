@@ -1,10 +1,14 @@
 import { doc, setDoc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
 import { date2Str } from "./common.utils";
 
-export class DiaryManager {
+// Singleton class
+class DiaryManager {
 
-  setUser(userDocRef) {
-    this.userDocRef = userDocRef;
+  constructor() {
+    this.userDocRef = null;
+    this.saveCooldown = 1000;  // default
+    this.saved = false;
+    this.saveFunc;
   }
 
   async fetchDiary(date) {
@@ -78,4 +82,15 @@ export class DiaryManager {
     return result;
   }
 
+  async triggerSave(date, text, force = false) {
+    if (text === null) return;
+    if (!force) clearTimeout(this.saveFunc);
+    this.saveFunc = setTimeout(async () => {
+      await this.saveDiary(date, text);  // hopefully 'this' should refer to DiaryManager because it is in an arrow function
+      this.saved = true;
+    }, this.saveCooldown);
+  }
 }
+
+// singleton, only new it once
+export const diaryManager = new DiaryManager();
