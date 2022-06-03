@@ -3,9 +3,9 @@ import { Route, Routes } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 
 import SideBar from './components/SideBar';
-import Diary2 from './routes/Diary2';
+import Diary from './routes/Diary';
 import Search from './routes/Search';
-// import Profile from './routes/Profile';
+import Profile from './routes/Profile';
 import Modal from './assets/Modal';
 import SquareButton from './assets/SquareButton';
 
@@ -30,9 +30,9 @@ function App() {
 
       <div className="reletive sm:pl-14 z-30">
         <Routes>
-          <Route exact path="/" element={<Diary2 />} />
+          <Route exact path="/" element={<Diary />} />
           <Route path="/search" element={<Search />} />
-          {/* <Route path="/profile" element={<Profile />} /> */}
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
     </div>

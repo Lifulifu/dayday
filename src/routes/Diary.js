@@ -1,134 +1,130 @@
 import { React, useState, useRef, useEffect, useContext } from 'react'
+import { useTransition } from 'react-transition-state';
 
-import EasyMDE from "easymde";
-import "easymde/dist/easymde.min.css";
-import "./override-styles.css";
+import { Editor, EditorState, ContentState, CompositeDecorator } from 'draft-js';
+import 'draft-js/dist/Draft.css';
 import "react-datepicker/dist/react-datepicker.css";
+import './override-styles.css';
 
 import DiaryTopBar from '../components/DiaryTopBar';
 import DatePicker from 'react-datepicker';
 import { AiOutlineRight, AiOutlineLeft, AiTwotonePlayCircle } from 'react-icons/ai'
 
 import { UserContext } from '../contexts/user.context';
-import { DiaryManager } from '../utils/diaryManager';
+import { diaryManager } from '../utils/diaryManager';
 import { date2Str, offsetDate, isToday, date2IsoStr } from '../utils/common.utils';
 
-
-const SAVE_DIARY_COOLDOWN = 1000;
-const diaryManager = new DiaryManager();
-
-const getEasyMde = (parentDom) => {
-  return new EasyMDE({
-    element: parentDom,  // will be sibling of editorDom, child of containerDom
-    autofocus: true,
-    toolbar: false,
-    spellChecker: false,
-    placeholder: '# Write something ...',
-  });
+const TagComponent = (props) => {
+  console.log(`tag '${props.decoratedText}' generated.`)
+  return (
+    <span
+      className='text-clr-highlight text-2xl font-bold cursor-pointer hover:underline'
+      onClick={() => console.log(props.decoratedText)}>
+      {props.children}
+    </span>
+  )
 }
+
+// tag detection
+const tagStrategy = (contentBlock, callback, contentState) => {
+  const tagRE = /#\S*/g  // hashtag followed by any non-space char
+  let matchArr;  // [matchStr, index, input, groups]
+  // regex objects keep an internal index to record where the next exec() should start from
+  while ((matchArr = tagRE.exec(contentBlock.getText())) != null) {
+    const start = matchArr.index;
+    callback(start, start + matchArr[0].length)  // the index range to be highlighted
+  }
+}
+
+const compositeDecorator = new CompositeDecorator([
+  {
+    strategy: tagStrategy,
+    component: TagComponent
+  }
+])
 
 export default function Diary() {
 
   const { userData } = useContext(UserContext);
 
-  const fetchedDiary = useRef(null);  // stage newly fetched diary before render it to editor
-  const editor = useRef(null);
-  const canChangeDate = useRef(true);  // debounce switching diary
-
+  const [editorState, setEditorState] = useState(() =>
+    EditorState.createEmpty(compositeDecorator));
+  const diaryBuf = useRef(null);
   const [currDate, setCurrDate] = useState(new Date());
-  const [displayedDate, setDisplayedDate] = useState(new Date());  // will align with currDate when diary is fetched
-  const [animationClass, setAnimationClass] = useState('');
-  const [saved, setSaved] = useState(true);
+  const currDateBuf = useRef(new Date());
+  const [editorShowState, toggleEditorShow] = useTransition({ timeout: 300, preEnter: true });
+  const [isSaved, setIsSaved] = useState(true);
+
+  const setEditorText = (text) => {
+    setEditorState(EditorState.createWithContent(
+      ContentState.createFromText(text),
+      compositeDecorator
+    ))
+  }
+
+  const getEditorText = () => editorState.getCurrentContent().getPlainText()
 
   // set content or just title if content is empty
   const displayDiaryContent = (date, data) => {
     console.log('display diary', date2Str(date), data)
-    setDisplayedDate(date);
+    setCurrDate(date);
     if (data) {
-      editor.current.value(data.content);
+      setEditorText(data.content);
     }
     else {
-      editor.current.value('');
+      setEditorText('');
     }
-  }
-
-  const timer = useRef(null);
-  const triggerAutoSave = async (date, text, force = false) => {
-    if (text === null) return;
-    if (!force) clearTimeout(timer.current);
-    timer.current = setTimeout(async () => {
-      await diaryManager.saveDiary(date, text);
-      setSaved(true);
-    }, SAVE_DIARY_COOLDOWN);
-  }
-
-  // force save diary for currDate before date changes
-  const changeDate = async (newDate) => {
-    if (!canChangeDate || !editor.current || !userData) return;
-    canChangeDate.current = false;
-    triggerAutoSave(currDate, editor.current.value(), true);
-    setCurrDate(newDate);
   }
 
   // on mounted
   useEffect(() => {
-    // create editor dom ele
-    const containerDom = document.getElementById('editor-container');
-    const editorDom = document.createElement('textarea');
-    containerDom.append(editorDom);
-    editor.current = getEasyMde(editorDom);
-
-    return () => {  // remove everything in container
-      containerDom.innerHTML = '';
-    }
+    toggleEditorShow(true);
   }, []);
 
   // on current date change
   useEffect(() => {
-    if (userData)
-      diaryManager.setUser(userData.userDocRef);
+    diaryManager.userData = userData;
+    diaryManager.setIsSaved = setIsSaved;
+    // fetch and render new diary
+    if (!!userData)
+      changeDate(currDate);
+  }, [userData])
 
-    if (!userData || !editor.current) return;
+  const changeDate = async (newDate) => {
+    diaryManager.triggerSave(currDate, getEditorText(), true) // force save (ignore cooldown)
+    toggleEditorShow(false)
+    currDateBuf.current = newDate;
+    diaryBuf.current = diaryManager.fetchDiary(newDate)
+  }
 
-    // triggerAutoSave depends on userData, editor and currDate
-    // need to re-bind onchange event every time the dependancy changes, see:
-    // https://stackoverflow.com/questions/53845595/wrong-react-hooks-behaviour-with-event-listener
-    const onChangeHandler = (cm, delta) => {
-      setSaved(false);
-      triggerAutoSave(currDate, cm.getValue());
+  useEffect(() => {
+    if (editorShowState !== 'exited' || !diaryBuf.current) return;
+    const showNewDiary = async () => {
+      const newDiary = await diaryBuf.current;
+      displayDiaryContent(currDateBuf.current, newDiary)
+      toggleEditorShow(true)
     }
-    const onRenderLineHandler = (cm, line, ele) => { }
-    editor.current.codemirror.on('change', onChangeHandler);
-    editor.current.codemirror.on('renderLine', onRenderLineHandler);
+    showNewDiary();
+  }, [editorShowState])
 
-    // fetch new diary and fadeout
-    fetchedDiary.current = diaryManager.fetchDiary(currDate);
-    setAnimationClass('fade-out');
 
-    return () => {
-      editor.current.codemirror.off('change', onChangeHandler);
-    }
-  }, [userData, currDate])
-
-  // on editor faded out
-  const editorFadeOutAnimationEndHandler = async (e) => {
-    if (e.animationName !== 'fade-out') return;
-    const data = await fetchedDiary.current;  // wait until diary is fetched
-    displayDiaryContent(currDate, data);
-    setAnimationClass('fade-in');
-    canChangeDate.current = true;
+  // on editor change
+  const handleEditorChange = (_editorState) => {
+    if (!diaryManager.userData) return;
+    setEditorState(_editorState)
+    setIsSaved(false)
+    diaryManager.triggerSave(currDate, getEditorText())
   }
 
   return (
     <>
-      <DiaryTopBar date={displayedDate} saved={saved} />
+      <DiaryTopBar date={currDate} saved={isSaved} />
 
       <div className="relative pt-4 px-6 overflow-x-hidden">
         <div className="flex flex-col items-center overflow-hidden">
 
-          <div className={`w-full md:max-w-2xl -z-0 ${animationClass}`}
-            onAnimationEnd={editorFadeOutAnimationEndHandler}>
-            <div className='flex sm:justify-start justify-center items-center'>
+          <div className={`${editorShowState} editor w-full md:max-w-2xl`}>
+            <div className='relative z-10 flex sm:justify-start justify-center items-center'>
               <AiOutlineLeft onClick={() => changeDate(offsetDate(currDate, -1))}
                 className='flex-shrink-0 text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
 
@@ -141,10 +137,10 @@ export default function Diary() {
                     <div className='flex justify-center items-center cursor-pointer 
                     w-56 text-center px-2 py-4 rounded-lg hover:bg-gray-100 text-4xl flex-shrink-0'>
                       {
-                        isToday(displayedDate) ?
+                        isToday(currDate) ?
                           <AiTwotonePlayCircle size='10' className='text-clr-highlight mr-2' /> : null
                       }
-                      <h1>{date2Str(displayedDate)}</h1>
+                      <h1>{date2Str(currDate)}</h1>
                     </div>
                   } />
               </div>
@@ -153,7 +149,8 @@ export default function Diary() {
                 className='flex-shrink-0 text-gray-300 w-10 h-10 p-2 cursor-pointer rounded-full hover:bg-gray-100' />
             </div>
 
-            <div id="editor-container"></div>
+            <Editor
+              editorState={editorState} onChange={handleEditorChange} />
 
           </div>
 

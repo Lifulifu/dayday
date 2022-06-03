@@ -39,7 +39,7 @@ export default function Profile() {
     console.log('user state changed', userData);
     if (!userData) return;
 
-    diaryManager.setUser(userData.userDocRef);
+    diaryManager.userData = userData
     const diaries = await diaryManager.fetchDiaries(
       offsetDate(currDate.current, -365), currDate.current);
     console.log('diaries', diaries);

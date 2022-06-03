@@ -5,16 +5,17 @@ import { date2Str } from "./common.utils";
 class DiaryManager {
 
   constructor() {
-    this.userDocRef = null;
-    this.saveCooldown = 1000;  // default
-    this.saved = false;
-    this.saveFunc;
+    this.userData = null;
+    this.setIsSaved = null;  // callback, call setIsSaved(true) if diary saved
+    this.saveCooldown = 1000;
+
+    this._saveFunc = null;
   }
 
   async fetchDiary(date) {
     const dateStr = date2Str(date);
     console.log(`fetching diary ${dateStr}`)
-    const diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);
+    const diaryDocRef = doc(this.userData.userDocRef, 'diaries', dateStr);
     const diarySnap = await getDoc(diaryDocRef);
     if (diarySnap.exists)
       return diarySnap.data();
@@ -22,11 +23,11 @@ class DiaryManager {
   }
 
   async saveDiary(inDate, content) {
-    if (!this.userDocRef) return;
+    if (!this.userData) return;
 
     const dateStr = date2Str(inDate);
-    console.log(`saving diary ${dateStr}`)
-    const diaryDocRef = doc(this.userDocRef, 'diaries', dateStr);
+    console.log(`saving diary ${dateStr}`, content)
+    const diaryDocRef = doc(this.userData.userDocRef, 'diaries', dateStr);
     const diarySnap = await getDoc(diaryDocRef);
 
     const date = new Date(inDate.valueOf());
@@ -67,7 +68,7 @@ class DiaryManager {
 
     const result = [];
     try {
-      const diaryCollRef = collection(this.userDocRef, 'diaries');
+      const diaryCollRef = collection(this.userData.userDocRef, 'diaries');
       const q = query(diaryCollRef,
         where('date', '>=', start),
         where('date', '<=', end));
@@ -84,10 +85,10 @@ class DiaryManager {
 
   async triggerSave(date, text, force = false) {
     if (text === null) return;
-    if (!force) clearTimeout(this.saveFunc);
-    this.saveFunc = setTimeout(async () => {
+    if (!force) clearTimeout(this._saveFunc);
+    this._saveFunc = setTimeout(async () => {
       await this.saveDiary(date, text);  // hopefully 'this' should refer to DiaryManager because it is in an arrow function
-      this.saved = true;
+      this.setIsSaved(true);
     }, this.saveCooldown);
   }
 }

@@ -1,12 +1,17 @@
-/* easy mde */
-.CodeMirror.cm-s-easymde.CodeMirror-wrap {
-  border: none;
-  padding: 0;
+/* for editor transitions */
+.editor {
+  transition: opacity 0.3s;
 }
 
-.cm-s-easymde .cm-header-1.cm-header-1 {
-  font-size: 150%;
-  color: #72a3a2;
+.editor.preEnter,
+.editor.exiting,
+.editor.exited {
+  opacity: 0;
+}
+
+.editor.entering,
+.editor.entered {
+  opacity: 1;
 }
 
 /* react date picker */
@@ -22,6 +27,6 @@
 
 /* Draft js */
 .public-DraftEditor-content {
-  background-color: antiquewhite;
+  /* background-color: antiquewhite; */
   min-height: 50vh;
 }
