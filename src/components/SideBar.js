@@ -10,6 +10,7 @@ import {
   AiOutlineSetting,
 } from 'react-icons/ai'
 import { BiNote } from 'react-icons/bi'
+import { RiHashtag } from 'react-icons/ri'
 
 export default function SideBar({ className }) {
 
@@ -43,6 +44,9 @@ export default function SideBar({ className }) {
 
           <SideBarLink icon={<AiOutlineEdit />}
             text="Diary" to="/" onClick={onItemClick} />
+
+          <SideBarLink icon={<RiHashtag />}
+            text="Tags" to="/tags" onClick={onItemClick} />
 
           <SideBarLink icon={<AiOutlineSearch />}
             text="Search" to="/search" onClick={onItemClick} />

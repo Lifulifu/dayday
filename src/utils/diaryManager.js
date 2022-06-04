@@ -26,7 +26,6 @@ class DiaryManager {
     if (!this.userData) return;
 
     const dateStr = date2Str(inDate);
-    console.log(`saving diary ${dateStr}`, content)
     const diaryDocRef = doc(this.userData.userDocRef, 'diaries', dateStr);
     const diarySnap = await getDoc(diaryDocRef);
 
@@ -34,14 +33,20 @@ class DiaryManager {
     date.setUTCHours(0, 0, 0, 0);  // round to start of day
     try {
       if (diarySnap.exists()) {
-        const { createdAt } = diarySnap.data();
-        await setDoc(diaryDocRef, {
-          date,
-          lastModified: new Date(),
-          createdAt,
-          content,
-          length: content.length
-        });
+        const { content: oldContent, createdAt } = diarySnap.data();
+        if (oldContent !== content) { // only if content not dirty (effects lastModified date)
+          await setDoc(diaryDocRef, {
+            date,
+            lastModified: new Date(),
+            createdAt,
+            content,
+            length: content.length
+          });
+          console.log(`diary ${dateStr} updated`)
+        }
+        else {
+          console.log(`diary ${dateStr} content is up to date`)
+        }
       }
       else {
         await setDoc(diaryDocRef, {
@@ -51,6 +56,7 @@ class DiaryManager {
           content,
           length: content.length
         });
+        console.log(`diary ${dateStr} created`)
       }
     }
     catch (err) {
@@ -83,13 +89,59 @@ class DiaryManager {
     return result;
   }
 
+  async fetchDirtyDiaries(afterDate = null) {
+    const result = [];
+    try {
+      const collRef = collection(this.userData.userDocRef, 'diaries');
+      let snap;
+      if (!!afterDate) {
+        const q = query(collRef,
+          where('lastModified', '>', afterDate))
+        snap = await getDocs(q)
+      }
+      else {
+        snap = await getDocs(collRef);
+      }
+      snap.forEach((e) => {
+        result.push(e.data());
+      })
+    }
+    catch (err) {
+      console.log('error fetching date after', date2Str(afterDate));
+    }
+    return result;
+  }
+
   async triggerSave(date, text, force = false) {
+    console.log(`diary ${date2Str(date)} save triggered`)
     if (text === null) return;
     if (!force) clearTimeout(this._saveFunc);
     this._saveFunc = setTimeout(async () => {
       await this.saveDiary(date, text);  // hopefully 'this' should refer to DiaryManager because it is in an arrow function
       this.setIsSaved(true);
     }, this.saveCooldown);
+  }
+
+  async saveTagLocation(tagName, dateStr, line) {
+    if (tagName.length === 0)
+      tagName = 'default';
+    const locationsRef = doc(this.userData.userDocRef, 'tags', tagName, 'locations');
+    const locationsSnap = await getDoc(locationsRef);
+    try {
+      let appendedLocations;
+      if (locationsSnap.exists()) {
+        appendedLocations = locationsSnap.data().push({ // fetch old arr and push new item
+          dateStr, line
+        });
+      }
+      else { // tag does not exist
+        appendedLocations = [{ dateStr, line }]; // create a new arr
+      }
+      await setDoc(locationsRef, appendedLocations);
+    }
+    catch (err) {
+      console.log('error saving tag', err);
+    }
   }
 }
 

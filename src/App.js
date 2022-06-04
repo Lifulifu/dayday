@@ -6,6 +6,7 @@ import SideBar from './components/SideBar';
 import Diary from './routes/Diary';
 import Search from './routes/Search';
 import Profile from './routes/Profile';
+import Tags from './routes/Tags';
 import Modal from './assets/Modal';
 import SquareButton from './assets/SquareButton';
 
@@ -28,9 +29,10 @@ function App() {
 
       <SideBar className="fixed z-40" />
 
-      <div className="reletive sm:pl-14 z-30">
+      <div className="relative sm:ml-14 z-30">
         <Routes>
           <Route exact path="/" element={<Diary />} />
+          <Route path="/tags" element={<Tags />} />
           <Route path="/search" element={<Search />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
