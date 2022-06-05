@@ -1,5 +1,6 @@
 import { React, useState, useRef, useEffect, useContext } from 'react'
 import { useTransition } from 'react-transition-state';
+import { useParams } from 'react-router-dom';
 
 import { Editor, EditorState, ContentState, CompositeDecorator } from 'draft-js';
 import 'draft-js/dist/Draft.css';
@@ -18,7 +19,7 @@ import {
 
 import { UserContext } from '../contexts/user.context';
 import { diaryManager } from '../utils/diaryManager';
-import { date2Str, offsetDate, isToday, date2IsoStr } from '../utils/common.utils';
+import { date2Str, offsetDate, isToday, str2Date, isDateStrValid } from '../utils/common.utils';
 import TopBarItem from '../components/TopBarItem';
 
 const TagComponent = (props) => {
@@ -66,6 +67,7 @@ function IsSaved({ isSaved }) {
 export default function Diary() {
 
   const { userData } = useContext(UserContext);
+  const { dateParam } = useParams();
 
   const [editorState, setEditorState] = useState(() =>
     EditorState.createEmpty(compositeDecorator));
@@ -98,16 +100,24 @@ export default function Diary() {
 
   // on mounted
   useEffect(() => {
+    console.log('param', dateParam)
     toggleEditorShow(true);
   }, []);
 
   // on current date change
   useEffect(() => {
+    console.log('userData changed')
     diaryManager.userData = userData;
     diaryManager.setIsSaved = setIsSaved;
+
     // fetch and render new diary
-    if (!!userData)
+    if (!userData) return;
+    if (dateParam === 'today')
       triggerDiarySwitch(currDate);
+    else {
+      if (isDateStrValid(dateParam))
+        triggerDiarySwitch(str2Date(dateParam))
+    }
   }, [userData])
 
   const triggerDiarySwitch = (newDate) => {

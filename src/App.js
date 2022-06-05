@@ -1,5 +1,5 @@
 import { React, useContext, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 
 import SideBar from './components/SideBar';
@@ -7,6 +7,7 @@ import Diary from './routes/Diary';
 import Search from './routes/Search';
 import Profile from './routes/Profile';
 import Tags from './routes/Tags';
+import Collection from './routes/Collection';
 import Modal from './assets/Modal';
 import SquareButton from './assets/SquareButton';
 
@@ -31,8 +32,10 @@ function App() {
 
       <div className="relative sm:ml-14 z-30">
         <Routes>
-          <Route exact path="/" element={<Diary />} />
+          <Route path="/" element={<Navigate to="/diary/today" replace />} />
+          <Route path="/diary/:dateParam" element={<Diary />} />
           <Route path="/tags" element={<Tags />} />
+          <Route path="/tags/collection" element={<Collection />} />
           <Route path="/search" element={<Search />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>

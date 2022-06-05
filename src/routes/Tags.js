@@ -56,7 +56,7 @@ export default function Tags() {
       </div>
       <div className='flex flex-row flex-wrap items-center gap-2'>
         {getTagItemsData(tagLocationsByTagName).map(({ tagName, count, url }) => (
-          <TagItem tagName={tagName} count={count}></TagItem>
+          <TagItem tagName={tagName} count={count} url="collection" key={tagName}></TagItem>
         ))}
       </div>
     </ContentContainer>

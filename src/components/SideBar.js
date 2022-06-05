@@ -43,7 +43,7 @@ export default function SideBar({ className }) {
             text="Note" to="/note" onClick={onItemClick} />
 
           <SideBarLink icon={<AiOutlineEdit />}
-            text="Diary" to="/" onClick={onItemClick} />
+            text="Diary" to="/diary/today" onClick={onItemClick} />
 
           <SideBarLink icon={<RiHashtag />}
             text="Tags" to="/tags" onClick={onItemClick} />
