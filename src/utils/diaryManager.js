@@ -1,5 +1,9 @@
-import { doc, setDoc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
+import {
+  doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs,
+  collection, query, where
+} from "firebase/firestore";
 import { date2Str } from "./common.utils";
+import { groupBy } from "lodash"
 
 // Singleton class
 class DiaryManager {
@@ -30,7 +34,7 @@ class DiaryManager {
     const diarySnap = await getDoc(diaryDocRef);
 
     const date = new Date(inDate.valueOf());
-    date.setUTCHours(0, 0, 0, 0);  // round to start of day
+    date.setHours(0, 0, 0, 0);  // round to start of day
     try {
       if (diarySnap.exists()) {
         const { content: oldContent, createdAt } = diarySnap.data();
@@ -49,10 +53,11 @@ class DiaryManager {
         }
       }
       else {
+        const now = new Date();
         await setDoc(diaryDocRef, {
           date,
-          lastModified: new Date(),
-          createdAt: new Date(),
+          lastModified: now,
+          createdAt: now,
           content,
           length: content.length
         });
@@ -112,6 +117,26 @@ class DiaryManager {
     return result;
   }
 
+  async saveTagLocationsLastUpdate(date) {
+    try {
+      await updateDoc(this.userData.userDocRef, { tagLocationsLastUpdate: date })
+    }
+    catch (err) {
+      console.log('error setting tagLocationLastUpdate', err)
+    }
+  }
+
+  async fetchTagLocationsLastUpdate(date) {
+    try {
+      const snap = await getDoc(this.userData.userDocRef)
+      console.log(snap.data())
+      return snap.data().tagLocationsLastUpdate.toDate()
+    }
+    catch (err) {
+      console.log('error getting tagLocationLastUpdate', err)
+    }
+  }
+
   async triggerSave(date, text, force = false) {
     console.log(`diary ${date2Str(date)} save triggered`)
     if (text === null) return;
@@ -122,27 +147,72 @@ class DiaryManager {
     }, this.saveCooldown);
   }
 
-  async saveTagLocation(tagName, dateStr, line) {
-    if (tagName.length === 0)
-      tagName = 'default';
-    const locationsRef = doc(this.userData.userDocRef, 'tags', tagName, 'locations');
-    const locationsSnap = await getDoc(locationsRef);
-    try {
-      let appendedLocations;
-      if (locationsSnap.exists()) {
-        appendedLocations = locationsSnap.data().push({ // fetch old arr and push new item
-          dateStr, line
-        });
+  collectTagLocationsFromDiary(diary) {
+    // returns array of all tags in a diary 
+    // {tagName, lineNum, col}
+    const tagRE = /#[^#\s]*/g  // hashtag followed by any non-space, non-tag char 
+    const lines = diary.content.split('\n')
+    const result = [];
+    lines.forEach((line, lineNum) => {
+      let matchArr = null;
+      while ((matchArr = tagRE.exec(line)) != null) {
+        const tagName = matchArr[0].slice(1, matchArr[0].length) // exclude '#'
+        result.push({
+          tagName,
+          lineNum,
+          col: matchArr.index
+        })
       }
-      else { // tag does not exist
-        appendedLocations = [{ dateStr, line }]; // create a new arr
+    })
+    return result;
+  }
+
+  async updateTagLocationsFromDiaries(diaries) {
+    for (const diary of diaries) {
+      const dateStr = date2Str(diary.date.toDate())
+      const locations = this.collectTagLocationsFromDiary(diary)
+      try {
+        const locationsRef = doc(
+          this.userData.userDocRef, 'tags', dateStr)
+        if (locations.length > 0)
+          await setDoc(locationsRef, { locations })
+        else
+          await deleteDoc(locationsRef)
       }
-      await setDoc(locationsRef, appendedLocations);
-    }
-    catch (err) {
-      console.log('error saving tag', err);
+      catch (err) {
+        console.log('error updating tag', err, dateStr, locations)
+      }
     }
   }
+
+  async fetchTagLocations() {
+    const result = {}
+    try {
+      const ref = collection(this.userData.userDocRef, 'tags')
+      const snap = await getDocs(ref)
+      snap.forEach((e) => {
+        result[e.id] = {
+          ...e.data() // locations: array of {tagName, line, col}
+        };
+      })
+    }
+    catch (err) {
+      console.log('error fetching tag locations', err)
+    }
+    return result;
+  }
+
+  getTagLocationsByTagName(locationsByDate) {
+    // flatten locationsByDate
+    const flattened = []
+    for (const dateStr in locationsByDate) {
+      locationsByDate[dateStr].locations.forEach(({ ...attrs }) => {
+        flattened.push({ ...attrs, dateStr })
+      })
+    }
+    return groupBy(flattened, ({ tagName }) => tagName);
+  }
+
 }
 
 // singleton, only new it once
