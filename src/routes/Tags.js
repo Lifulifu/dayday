@@ -5,6 +5,7 @@ import SquareButton from '../assets/SquareButton';
 import { UserContext } from '../contexts/user.context';
 import { diaryManager } from '../utils/diaryManager';
 import TagItem from '../components/TagItem';
+import RefreshButton from '../assets/RefreshButton';
 
 export default function Tags() {
   const { userData } = useContext(UserContext);
@@ -23,12 +24,15 @@ export default function Tags() {
     // array of { tagName, count, url }
     const result = [];
     for (const tagName in tagLocations) {
+      if (tagName === '')
+        continue
       result.push({
         tagName,
         count: tagLocations[tagName].length,
         url: ''
       })
     }
+    result.sort((a, b) => (b.count - a.count))
     return result;
   }
 
@@ -46,9 +50,11 @@ export default function Tags() {
 
   return (
     <ContentContainer>
-      <h1 className='text-4xl font-bold'>Top Tags</h1>
-      <SquareButton onClick={updateTagLocations}>refresh</SquareButton>
-      <div>
+      <div className='flex flex-row items-center'>
+        <h1 className='text-4xl font-bold'>Top Tags</h1>
+        <RefreshButton onClick={updateTagLocations} size={30} />
+      </div>
+      <div className='flex flex-row flex-wrap items-center gap-2'>
         {getTagItemsData(tagLocationsByTagName).map(({ tagName, count, url }) => (
           <TagItem tagName={tagName} count={count}></TagItem>
         ))}
