@@ -8,6 +8,11 @@ Currently the app is still in development, all user submits **ARE NOT ENCRYPTED*
 - Tag system, view all contents under a tag.
 - Responsive, looks pretty on both PC and mobile.
 
+## Tech Stack
+- Tailwind css
+- React js
+- Firebase firestore
+
 ## Todo
 - Diary search
 - Pinned diary
