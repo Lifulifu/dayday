@@ -5,13 +5,14 @@ export const date2Str = (date) => (
   `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
 )
 
-export const str2Date = (dateStr) => (
+export const str2Date = (dateStr) => {
+  const splitted = dateStr.split('-')
   new Date(
-    Number.parseInt(dateStr.slice(0, 4)),
-    Number.parseInt(dateStr.slice(5, 7)) - 1,
-    Number.parseInt(dateStr.slice(8, 10))
+    Number.parseInt(splitted[0]),
+    Number.parseInt(splitted[1]) - 1,
+    Number.parseInt(splitted[2])
   )
-)
+}
 
 export const isDateStrValid = (dateStr) => {
   return !!dateStr.match(/^\d{4}-\d{2}-\d{2}$/)

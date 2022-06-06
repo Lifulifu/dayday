@@ -1,5 +1,5 @@
 import { React, useContext, useEffect, useState, useRef } from 'react'
-import SquareButton from '../assets/SquareButton'
+import SquareButton from '../components/SquareButton'
 
 import Calendar from 'react-github-contribution-calendar'
 

@@ -156,11 +156,16 @@ class DiaryManager {
     lines.forEach((line, lineNum) => {
       let matchArr = null;
       while ((matchArr = tagRE.exec(line)) != null) {
+        // tag found, add lineNum of this tag to the previous tag
+        if (result.length > 0) {
+          result[result.length - 1].nextTagLineNum = lineNum;
+        }
         const tagName = matchArr[0].slice(1, matchArr[0].length) // exclude '#'
         result.push({
           tagName,
           lineNum,
-          col: matchArr.index
+          col: matchArr.index,
+          nextTagLineNum: -1 // no next tag to update this value, this is the last tag
         })
       }
     })
@@ -173,7 +178,7 @@ class DiaryManager {
       const locations = this.collectTagLocationsFromDiary(diary)
       try {
         const locationsRef = doc(
-          this.userData.userDocRef, 'tags', dateStr)
+          this.userData.userDocRef, 'tags', 'locations', 'byDate', dateStr)
         if (locations.length > 0)
           await setDoc(locationsRef, { locations })
         else
@@ -188,7 +193,7 @@ class DiaryManager {
   async fetchTagLocations() {
     const result = {}
     try {
-      const ref = collection(this.userData.userDocRef, 'tags')
+      const ref = collection(this.userData.userDocRef, 'tags', 'locations', 'byDate')
       const snap = await getDocs(ref)
       snap.forEach((e) => {
         result[e.id] = {

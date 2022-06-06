@@ -8,8 +8,8 @@ import Search from './routes/Search';
 import Profile from './routes/Profile';
 import Tags from './routes/Tags';
 import Collection from './routes/Collection';
-import Modal from './assets/Modal';
-import SquareButton from './assets/SquareButton';
+import Modal from './components/Modal';
+import SquareButton from './components/SquareButton';
 
 import { UserContext } from './contexts/user.context';
 import { logInWithGooglePopup, logOut } from './utils/firebase.utils'
@@ -35,7 +35,7 @@ function App() {
           <Route path="/" element={<Navigate to="/diary/today" replace />} />
           <Route path="/diary/:dateParam" element={<Diary />} />
           <Route path="/tags" element={<Tags />} />
-          <Route path="/tags/collection" element={<Collection />} />
+          <Route path="/tags/collection/:tagName" element={<Collection />} />
           <Route path="/search" element={<Search />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>

@@ -1,11 +1,10 @@
 import { React, useState, useEffect, useContext } from 'react'
 import ContentContainer from '../components/ContentContainer';
-import SquareButton from '../assets/SquareButton';
 
 import { UserContext } from '../contexts/user.context';
 import { diaryManager } from '../utils/diaryManager';
 import TagItem from '../components/TagItem';
-import RefreshButton from '../assets/RefreshButton';
+import RefreshButton from '../components/RefreshButton';
 
 export default function Tags() {
   const { userData } = useContext(UserContext);
@@ -56,7 +55,7 @@ export default function Tags() {
       </div>
       <div className='flex flex-row flex-wrap items-center gap-2'>
         {getTagItemsData(tagLocationsByTagName).map(({ tagName, count, url }) => (
-          <TagItem tagName={tagName} count={count} url="collection" key={tagName}></TagItem>
+          <TagItem key={tagName} tagName={tagName} count={count} url={`collection/${tagName}`} />
         ))}
       </div>
     </ContentContainer>
