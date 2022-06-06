@@ -1,5 +1,7 @@
 # Dayday
-A diary web app for my personal use.
+A diary web app for my personal use. Available on https://daydaydiary.netlify.app/  
+
+Currently the app is still in development, all user submits **ARE NOT ENCRYPTED**, so the admin (me) can view all your diaries! Reconsider before you write down all your secrets unless you want to share them to me.
 
 ## Features
 - Autosave while editing, sync via google account.
