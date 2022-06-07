@@ -17,7 +17,11 @@ class DiaryManager {
   }
 
   async fetchDiary(date) {
-    const dateStr = date2Str(date);
+    let dateStr;
+    if (date instanceof Date)
+      dateStr = date2Str(date);
+    else
+      dateStr = date;
     console.log(`fetching diary ${dateStr}`)
     const diaryDocRef = doc(this.userData.userDocRef, 'diaries', dateStr);
     const diarySnap = await getDoc(diaryDocRef);
@@ -156,9 +160,14 @@ class DiaryManager {
     lines.forEach((line, lineNum) => {
       let matchArr = null;
       while ((matchArr = tagRE.exec(line)) != null) {
-        // tag found, add lineNum of this tag to the previous tag
-        if (result.length > 0) {
-          result[result.length - 1].nextTagLineNum = lineNum;
+        // tag found, add lineNum of this tag to all previous tags in the same line
+        if ((result.length > 0) && (lineNum !== result[result.length - 1].lineNum)) {
+          for (
+            let i = result.length - 1;
+            i >= 0 && result[i].nextTagLineNum === -1;
+            i--
+          )
+            result[i].nextTagLineNum = lineNum;
         }
         const tagName = matchArr[0].slice(1, matchArr[0].length) // exclude '#'
         result.push({
@@ -216,6 +225,22 @@ class DiaryManager {
       })
     }
     return groupBy(flattened, ({ tagName }) => tagName);
+  }
+
+  async updateTagLocations() {
+    const lastUpdate = await diaryManager.fetchTagLocationsLastUpdate()
+    const dirtyDiaries = await diaryManager.fetchDirtyDiaries(lastUpdate)
+    await diaryManager.updateTagLocationsFromDiaries(dirtyDiaries)
+    diaryManager.saveTagLocationsLastUpdate(new Date())
+    console.log(`updated tags from ${dirtyDiaries.length} diaries`)
+  }
+
+  getDiaryLines(diaryContent, startLine, endLine) {
+    if (endLine === -1)
+      endLine = diaryContent.length;
+    let lines = diaryContent.split('\n')
+    lines = lines.slice(startLine, endLine)
+    return lines.join('\n')
   }
 
 }
