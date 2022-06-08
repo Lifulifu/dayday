@@ -5,11 +5,10 @@ import {
 import { date2Str } from "./common.utils";
 import { groupBy } from "lodash"
 
-// Singleton class
 class DiaryManager {
 
-  constructor() {
-    this.userData = null;
+  constructor(userData) {
+    this.userData = userData;
     this.setIsSaved = null;  // callback, call setIsSaved(true) if diary saved
     this.saveCooldown = 1000;
 
@@ -216,7 +215,8 @@ class DiaryManager {
     return result;
   }
 
-  getTagLocationsByTagName(locationsByDate) {
+  async getTagLocationsByTagName() {
+    const locationsByDate = await this.fetchTagLocations()
     // flatten locationsByDate
     const flattened = []
     for (const dateStr in locationsByDate) {
@@ -228,10 +228,10 @@ class DiaryManager {
   }
 
   async updateTagLocations() {
-    const lastUpdate = await diaryManager.fetchTagLocationsLastUpdate()
-    const dirtyDiaries = await diaryManager.fetchDirtyDiaries(lastUpdate)
-    await diaryManager.updateTagLocationsFromDiaries(dirtyDiaries)
-    diaryManager.saveTagLocationsLastUpdate(new Date())
+    const lastUpdate = await this.fetchTagLocationsLastUpdate()
+    const dirtyDiaries = await this.fetchDirtyDiaries(lastUpdate)
+    await this.updateTagLocationsFromDiaries(dirtyDiaries)
+    this.saveTagLocationsLastUpdate(new Date())
     console.log(`updated tags from ${dirtyDiaries.length} diaries`)
   }
 
@@ -246,4 +246,4 @@ class DiaryManager {
 }
 
 // singleton, only new it once
-export const diaryManager = new DiaryManager();
+export default DiaryManager;

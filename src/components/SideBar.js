@@ -11,6 +11,7 @@ import {
 } from 'react-icons/ai'
 import { BiNote } from 'react-icons/bi'
 import { RiHashtag } from 'react-icons/ri'
+import { date2Str, str2Date } from '../utils/common.utils'
 
 export default function SideBar({ className }) {
 
@@ -43,7 +44,7 @@ export default function SideBar({ className }) {
             text="Note" to="/note" onClick={onItemClick} />
 
           <SideBarLink icon={<AiOutlineEdit />}
-            text="Diary" to="/diary/today" onClick={onItemClick} />
+            text="Diary" to={`/diary/${date2Str(new Date())}`} onClick={onItemClick} />
 
           <SideBarLink icon={<RiHashtag />}
             text="Tags" to="/tags" onClick={onItemClick} />

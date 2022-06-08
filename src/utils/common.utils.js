@@ -7,7 +7,7 @@ export const date2Str = (date) => (
 
 export const str2Date = (dateStr) => {
   const splitted = dateStr.split('-')
-  new Date(
+  return new Date(
     Number.parseInt(splitted[0]),
     Number.parseInt(splitted[1]) - 1,
     Number.parseInt(splitted[2])
@@ -15,7 +15,7 @@ export const str2Date = (dateStr) => {
 }
 
 export const isDateStrValid = (dateStr) => {
-  return !!dateStr.match(/^\d{4}-\d{2}-\d{2}$/)
+  return !!dateStr.match(/^\d{4}-\d{1,2}-\d{1,2}$/)
 }
 
 export const offsetDate = (date, offset) => {

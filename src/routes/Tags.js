@@ -1,14 +1,13 @@
 import { React, useState, useEffect, useContext } from 'react'
 import ContentContainer from '../components/ContentContainer';
 
-import { TagsContext } from '../contexts/tags.context';
-import { diaryManager } from '../utils/diaryManager';
+import { CoreContext } from '../contexts/core.context';
 import TagItem from '../components/TagItem';
 import RefreshButton from '../components/RefreshButton';
 
 export default function Tags() {
 
-  const { tagLocationsByTagName } = useContext(TagsContext)
+  const { diaryManager, tagLocationsByTagName } = useContext(CoreContext)
 
   const getTagItemsData = (tagLocationsByTagName) => {
     // array of { tagName, count, url }
@@ -33,7 +32,7 @@ export default function Tags() {
     <ContentContainer>
       <div className='flex flex-row items-center'>
         <h1 className='text-4xl font-bold'>Top Tags</h1>
-        <RefreshButton onClick={diaryManager.updateTagLocations} size={30} />
+        <RefreshButton onClick={diaryManager.updateTagLocations || null} size={30} />
       </div>
       <div className='flex flex-row flex-wrap items-center gap-2'>
         {getTagItemsData(tagLocationsByTagName).map(({ tagName, count, url }) => (

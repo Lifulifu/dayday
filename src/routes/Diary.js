@@ -1,6 +1,6 @@
 import { React, useState, useRef, useEffect, useContext } from 'react'
 import { useTransition } from 'react-transition-state';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import { Editor, EditorState, ContentState, CompositeDecorator } from 'draft-js';
 import 'draft-js/dist/Draft.css';
@@ -16,19 +16,20 @@ import {
   AiTwotonePlayCircle,
   AiOutlineCheckCircle
 } from 'react-icons/ai'
-
-import { UserContext } from '../contexts/user.context';
-import { diaryManager } from '../utils/diaryManager';
-import { date2Str, offsetDate, isToday, str2Date, isDateStrValid } from '../utils/common.utils';
 import TopBarItem from '../components/TopBarItem';
+import { Link } from 'react-router-dom';
+
+import { CoreContext } from '../contexts/core.context';
+import { date2Str, offsetDate, isToday, str2Date, isDateStrValid } from '../utils/common.utils';
 
 const TagComponent = (props) => {
+  const tagName = props.decoratedText.slice(1)
   return (
-    <span
-      className='text-clr-highlight text-2xl font-bold cursor-pointer hover:underline'
-      onClick={() => console.log(props.decoratedText)}>
+    <Link
+      to={`/tags/collection/${tagName}`}
+      className='text-clr-highlight text-2xl font-bold cursor-pointer hover:underline'>
       {props.children}
-    </span>
+    </Link>
   )
 }
 
@@ -64,10 +65,11 @@ function IsSaved({ isSaved }) {
   )
 }
 
-export default function Diary() {
+export default function Diary({ match }) {
 
-  const { userData } = useContext(UserContext);
+  const { diaryManager } = useContext(CoreContext);
   const { dateParam } = useParams();
+  const nav = useNavigate();
 
   const [editorState, setEditorState] = useState(() =>
     EditorState.createEmpty(compositeDecorator));
@@ -100,35 +102,30 @@ export default function Diary() {
 
   // on mounted
   useEffect(() => {
-    console.log('param', dateParam)
     toggleEditorShow(true);
   }, []);
 
+  const changeDate = async (newDate) => {
+    diaryManager.triggerSave(currDate, getEditorText(editorState), true) // force save (ignore cooldown)
+    nav(`/diary/${date2Str(newDate)}`)  // change url
+  }
+
   // on current date change
   useEffect(() => {
-    console.log('userData changed')
-    diaryManager.userData = userData;
-    diaryManager.setIsSaved = setIsSaved;
+    console.log('url param', dateParam)
 
     // fetch and render new diary
-    if (!userData) return;
-    if (dateParam === 'today')
-      triggerDiarySwitch(currDate);
-    else {
-      if (isDateStrValid(dateParam))
-        triggerDiarySwitch(str2Date(dateParam))
-    }
-  }, [userData])
+    if (!diaryManager || !isDateStrValid(dateParam))
+      return;
+    diaryManager.setIsSaved = setIsSaved;
+    triggerDiarySwitch(str2Date(dateParam))
+
+  }, [diaryManager, dateParam])
 
   const triggerDiarySwitch = (newDate) => {
     toggleEditorShow(false)
     currDateBuf.current = newDate;
     diaryBuf.current = diaryManager.fetchDiary(newDate)
-  }
-
-  const changeDate = async (newDate) => {
-    diaryManager.triggerSave(currDate, getEditorText(editorState), true) // force save (ignore cooldown)
-    triggerDiarySwitch(newDate)
   }
 
   useEffect(() => {
@@ -143,7 +140,7 @@ export default function Diary() {
 
   // on editor change
   const handleEditorChange = (_editorState) => {
-    if (!diaryManager.userData) return;
+    if (!diaryManager) return;
     setEditorState(_editorState)
     setIsSaved(false)
     diaryManager.triggerSave(currDate, getEditorText(_editorState))

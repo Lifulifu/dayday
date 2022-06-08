@@ -1,14 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { TagsContext } from '../contexts/tags.context';
+import { CoreContext } from '../contexts/core.context';
 
 import ContentContainer from '../components/ContentContainer'
-import { diaryManager } from '../utils/diaryManager';
+import { str2Date } from '../utils/common.utils';
 
 export default function Collection() {
 
   const { tagName } = useParams()
-  const { tagLocationsByTagName } = useContext(TagsContext)
+  const { diaryManager, tagLocationsByTagName } = useContext(CoreContext)
   const [tagContents, setTagContents] = useState([])  // array of {dateStr, content}
 
   useEffect(() => {
@@ -22,7 +22,10 @@ export default function Collection() {
       }
     })
 
-    Promise.all(proms).then((res) => setTagContents(res))
+    Promise.all(proms).then((res) => {
+      res.sort((a, b) => str2Date(a.dateStr) - str2Date(b.dateStr))
+      setTagContents(res)
+    })
 
   }, [tagLocationsByTagName])
 

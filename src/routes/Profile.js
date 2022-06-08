@@ -1,13 +1,12 @@
 import { React, useContext, useEffect, useState, useRef } from 'react'
 import SquareButton from '../components/SquareButton'
-
+import ContentContainer from '../components/ContentContainer'
 import Calendar from 'react-github-contribution-calendar'
 
 import { logOut } from '../utils/firebase.utils'
-import { offsetDate, date2IsoStr } from '../utils/common.utils'
 import { UserContext } from '../contexts/user.context'
-import { diaryManager } from '../utils/diaryManager'
-import ContentContainer from '../components/ContentContainer'
+import { CoreContext } from '../contexts/core.context'
+import { offsetDate, date2IsoStr } from '../utils/common.utils'
 
 
 const PANEL_COLORS = [
@@ -31,31 +30,28 @@ const length2Level = (length) => {
 }
 
 export default function Profile() {
-  const { userData } = useContext(UserContext);
-  const [calendarData, setCalendarData] = useState({});
-  const currDate = useRef(new Date());
+  const { userData } = useContext(UserContext)
+  const { diaryManager } = useContext(CoreContext)
+  const [calendarData, setCalendarData] = useState({})
+  const currDate = useRef(new Date())
 
-  console.log(calendarData)
   useEffect(() => {
-    console.log('user state changed', userData);
-    if (!userData) return;
-
-    diaryManager.userData = userData
     diaryManager.fetchDiaries(
       offsetDate(currDate.current, -365),
       currDate.current
-    ).then((diaries) => {
-      console.log('diaries', diaries);
-      setCalendarData( // convert array to map of {isoDate: level}
-        diaries.reduce((map, diary) => {
-          const dateObj = diary.date.toDate();
-          map[date2IsoStr(dateObj)] = length2Level(diary.length);
-          return map;
-        }, {})
-      );
-    })
+    )
+      .then((diaries) => {
+        console.log('diaries', diaries);
+        setCalendarData( // convert array to map of {isoDate: level}
+          diaries.reduce((map, diary) => {
+            const dateObj = diary.date.toDate();
+            map[date2IsoStr(dateObj)] = length2Level(diary.length);
+            return map;
+          }, {})
+        );
+      })
 
-  }, [userData])
+  }, [diaryManager])
 
   return (<> {
     userData ?

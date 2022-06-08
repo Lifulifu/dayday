@@ -5,15 +5,15 @@ import './index.css';
 
 import App from './App';
 import { UserProvider } from './contexts/user.context'
-import { TagsProvider } from './contexts/tags.context'
+import { CoreProvider } from './contexts/core.context'
 
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
       <UserProvider>
-        <TagsProvider>
+        <CoreProvider>
           <App />
-        </TagsProvider>
+        </CoreProvider>
       </UserProvider>
     </BrowserRouter>
   </React.StrictMode>,

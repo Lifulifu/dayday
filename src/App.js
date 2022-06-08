@@ -13,6 +13,7 @@ import SquareButton from './components/SquareButton';
 
 import { UserContext } from './contexts/user.context';
 import { logInWithGooglePopup, logOut } from './utils/firebase.utils'
+import { date2IsoStr, date2Str } from './utils/common.utils';
 
 function App() {
   const { userData } = useContext(UserContext);
@@ -32,8 +33,8 @@ function App() {
 
       <div className="relative sm:ml-14 z-30">
         <Routes>
-          <Route path="/" element={<Navigate to="/diary/today" replace />} />
           <Route path="/diary/:dateParam" element={<Diary />} />
+          <Route path="/" exact element={<Navigate to={`/diary/${date2Str(new Date())}`} replace />} />
           <Route path="/tags" element={<Tags />} />
           <Route path="/tags/collection/:tagName" element={<Collection />} />
           <Route path="/search" element={<Search />} />
