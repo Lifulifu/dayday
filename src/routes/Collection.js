@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { CoreContext } from '../contexts/core.context';
 
 import ContentContainer from '../components/ContentContainer'
@@ -33,11 +33,11 @@ export default function Collection() {
 
   return (
     <ContentContainer>
-      <a href="/tags"
+      <Link to="/tags"
         className='w-14 h-14 fixed flex flex-col justify-center items-center left-14 top-0 cursor-pointer 
       hover:bg-gray-200/50 text-gray-500' >
         <BiArrowBack size={30} />
-      </a>
+      </Link>
 
       <h1 className='text-4xl font-bold'>
         {'Collection for '}

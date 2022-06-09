@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 function compareRoutePrefix(a, b, level = 1) {
   try {
@@ -16,14 +16,14 @@ function SideBarLink({ icon, text, to, onClick }) {
   const isActive = () => compareRoutePrefix(location.pathname, to)
 
   return (
-    <NavLink to={to} onClick={onClick}
+    <Link to={to} onClick={onClick}
       className={
         `${isActive() ? 'bg-clr-highlight text-white' : 'hover:bg-gray-300'}
         h-14 flex items-center cursor-pointer 
         transition-colors duration-200 ease-in-out`}>
       <div className="w-14 flex flex-col items-center shrink-0">{icon}</div>
       <div className="flex-grow">{text}</div>
-    </NavLink >
+    </Link >
   )
 }
 
