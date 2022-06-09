@@ -24,7 +24,7 @@ export default function SideBar({ className }) {
     <div className={className}>
       {/* menu expand button, hided behind sideBar nav if not mobile screen */}
       <div className="w-14 h-14 flex flex-col items-center justify-center shrink-0 cursor-pointer
-      hover:bg-gray-100 transition-colors duration-200 ease-in-out z-10"
+      hover:bg-gray-200/50 transition-colors duration-200 ease-in-out z-10"
         onClick={() => setIsExpand(true)}>
         <AiOutlineMenu /></div>
 

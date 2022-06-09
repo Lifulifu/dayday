@@ -1,4 +1,4 @@
-import { React, useContext, useState } from 'react';
+import { React, useContext, useEffect } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 
@@ -17,6 +17,11 @@ import { date2IsoStr, date2Str } from './utils/common.utils';
 
 function App() {
   const { userData } = useContext(UserContext);
+
+  useEffect(() => {
+    document.title = 'DayDay';
+  }, [])
+
 
   return (
     <div className="font-montserrat">

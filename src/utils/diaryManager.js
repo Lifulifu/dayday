@@ -72,28 +72,45 @@ class DiaryManager {
     }
   }
 
-  async fetchDiaries(startDate, endDate) {
+  async fetchDiarySnaps(startDate, endDate) {
     endDate = endDate ?? new Date();
     const end = new Date(endDate.valueOf());
     const start = new Date(startDate.valueOf());
-    // start.setUTCHours(0, 0, 0, 0);
-    end.setUTCHours(0, 0, 0, 0);
-    console.log(`fetching diary from ${date2Str(start)} to ${date2Str(end)}`)
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
 
-    const result = [];
     try {
       const diaryCollRef = collection(this.userData.userDocRef, 'diaries');
       const q = query(diaryCollRef,
         where('date', '>=', start),
         where('date', '<=', end));
-      const snap = await getDocs(q);
-      snap.forEach((e) => {
-        result.push(e.data());
-      })
+      return await getDocs(q);
     }
     catch (err) {
       console.log('error fetching date range', err);
     }
+    return [];
+  }
+
+  async fetchDiaries(startDate, endDate) {
+    const result = []
+    const snap = await this.fetchDiarySnaps(startDate, endDate);
+    snap.forEach((e) => {
+      result.push(e.data());
+    })
+    return result;
+  }
+
+  async fetchDiaryFields(startDate, endDate, fieldNames) {
+    const result = [];
+    const diaries = await this.fetchDiarySnaps(startDate, endDate);
+    diaries.forEach((diary) => {
+      const data = fieldNames.reduce((map, fieldName) => {
+        map[fieldName] = diary.get(fieldName)
+        return map;
+      }, {})
+      result.push(data)
+    })
     return result;
   }
 

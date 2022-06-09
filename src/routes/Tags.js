@@ -7,7 +7,11 @@ import RefreshButton from '../components/RefreshButton';
 
 export default function Tags() {
 
-  const { diaryManager, tagLocationsByTagName } = useContext(CoreContext)
+  const { diaryManager, tagLocationsByTagName, setTagLocationsByTagName } = useContext(CoreContext)
+
+  useEffect(() => {
+    onRefreshClicked();
+  }, [diaryManager])
 
   const getTagItemsData = (tagLocationsByTagName) => {
     // array of { tagName, count, url }
@@ -28,11 +32,18 @@ export default function Tags() {
     return result;
   }
 
+  const onRefreshClicked = async () => {
+    if (!diaryManager) return;
+    await diaryManager.updateTagLocations()
+    const res = await diaryManager.getTagLocationsByTagName()
+    setTagLocationsByTagName(res)
+  }
+
   return (
     <ContentContainer>
       <div className='flex flex-row items-center'>
         <h1 className='text-4xl font-bold'>Top Tags</h1>
-        <RefreshButton onClick={diaryManager.updateTagLocations || null} size={30} />
+        <RefreshButton onClick={onRefreshClicked} size={30} />
       </div>
       <div className='flex flex-row flex-wrap items-center gap-2'>
         {getTagItemsData(tagLocationsByTagName).map(({ tagName, count, url }) => (

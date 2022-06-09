@@ -36,20 +36,20 @@ export default function Profile() {
   const currDate = useRef(new Date())
 
   useEffect(() => {
-    diaryManager.fetchDiaries(
+    if (!diaryManager) return;
+    diaryManager.fetchDiaryFields(
       offsetDate(currDate.current, -365),
-      currDate.current
-    )
-      .then((diaries) => {
-        console.log('diaries', diaries);
-        setCalendarData( // convert array to map of {isoDate: level}
-          diaries.reduce((map, diary) => {
-            const dateObj = diary.date.toDate();
-            map[date2IsoStr(dateObj)] = length2Level(diary.length);
-            return map;
-          }, {})
-        );
-      })
+      currDate.current,
+      ['date', 'length']
+    ).then((datas) => {
+      setCalendarData( // convert array to map of {isoDate: level}
+        datas.reduce((map, data) => {
+          const dateObj = data.date.toDate();
+          map[date2IsoStr(dateObj)] = length2Level(data.length);
+          return map;
+        }, {})
+      );
+    })
 
   }, [diaryManager])
 

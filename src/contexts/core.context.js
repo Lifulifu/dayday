@@ -4,7 +4,8 @@ import DiaryManager from "../utils/diaryManager";
 
 export const CoreContext = createContext({
   diaryManager: null,
-  tagLocationsByTagName: null
+  tagLocationsByTagName: null,
+  setTagLocationsByTagName: null
 });
 
 export const CoreProvider = ({ children }) => {
@@ -23,7 +24,7 @@ export const CoreProvider = ({ children }) => {
   }, [userData])
 
   return (
-    <CoreContext.Provider value={{ diaryManager, tagLocationsByTagName }}>
+    <CoreContext.Provider value={{ diaryManager, tagLocationsByTagName, setTagLocationsByTagName }}>
       {children}
     </CoreContext.Provider>
   )

@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom'
 import { CoreContext } from '../contexts/core.context';
 
 import ContentContainer from '../components/ContentContainer'
+import CollectionItem from '../components/CollectionItem'
+import { BiArrowBack } from 'react-icons/bi'
 import { str2Date } from '../utils/common.utils';
 
 export default function Collection() {
@@ -31,16 +33,23 @@ export default function Collection() {
 
   return (
     <ContentContainer>
-      <h1 className='text-4xl font-bold'>{'Collection for '}
+      <a href="/tags"
+        className='w-14 h-14 fixed flex flex-col justify-center items-center left-14 top-0 cursor-pointer 
+      hover:bg-gray-200/50 text-gray-500' >
+        <BiArrowBack size={30} />
+      </a>
+
+      <h1 className='text-4xl font-bold'>
+        {'Collection for '}
         <span className='text-clr-highlight'>#{tagName}</span>
       </h1>
+
       <div>
         {
           tagContents.map(({ dateStr, content }) => (
-            <div key={dateStr}>
-              <h2>{dateStr}</h2>
-              <p>{content}</p>
-            </div>
+            <CollectionItem
+              key={dateStr} dateStr={dateStr} content={content} url={`/diary/${dateStr}`}
+              className='my-4' />
           ))
         }
       </div>
