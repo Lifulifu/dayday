@@ -21,6 +21,7 @@ import { Link } from 'react-router-dom';
 
 import { CoreContext } from '../contexts/core.context';
 import { date2Str, offsetDate, isToday, str2Date, isDateStrValid } from '../utils/common.utils';
+import { BiWindows } from 'react-icons/bi';
 
 const TagComponent = (props) => {
   const tagName = props.decoratedText.slice(1)
@@ -44,10 +45,34 @@ const tagStrategy = (contentBlock, callback, contentState) => {
   }
 }
 
+const UrlComponent = (props) => {
+  return (
+    <a
+      onClick={() => window.open(props.decoratedText, '_blank')}
+      className='text-blue-600 font-bold cursor-pointer hover:underline'>
+      {props.children}
+    </a>
+  )
+}
+
+const urlStrategy = (contentBlock, callback, contentState) => {
+  const urlRE = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi
+  let matchArr;  // [matchStr, index, input, groups]
+  // regex objects keep an internal index to record where the next exec() should start from
+  while ((matchArr = urlRE.exec(contentBlock.getText())) != null) {
+    const start = matchArr.index;
+    callback(start, start + matchArr[0].length)  // the index range to be highlighted
+  }
+}
+
 const compositeDecorator = new CompositeDecorator([
   {
     strategy: tagStrategy,
     component: TagComponent
+  },
+  {
+    strategy: urlStrategy,
+    component: UrlComponent
   }
 ])
 

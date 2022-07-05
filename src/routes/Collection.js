@@ -33,13 +33,8 @@ export default function Collection() {
 
   return (
     <ContentContainer>
-      <Link to="/tags"
-        className='w-14 h-14 fixed flex flex-col justify-center items-center left-14 top-0 cursor-pointer 
-      hover:bg-gray-200/50 text-gray-500' >
-        <BiArrowBack size={30} />
-      </Link>
 
-      <h1 className='text-4xl font-bold'>
+      <h1 className='text-4xl font-bold flex sm:justify-start justify-center whitespace-pre'>
         {'Collection for '}
         <span className='text-clr-highlight'>#{tagName}</span>
       </h1>

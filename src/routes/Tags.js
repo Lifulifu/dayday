@@ -41,7 +41,7 @@ export default function Tags() {
 
   return (
     <ContentContainer>
-      <div className='flex flex-row items-center'>
+      <div className='flex flex-row items-center sm:justify-start justify-center'>
         <h1 className='text-4xl font-bold'>Top Tags</h1>
         <RefreshButton onClick={onRefreshClicked} size={30} />
       </div>
